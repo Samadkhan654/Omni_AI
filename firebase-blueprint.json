@@ -1,0 +1,121 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "Stores user profiles including operator or customer type and onboarding preferences, plus avatar customization",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner auth ID" },
+        "storeName": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "tier": { "type": "string" },
+        "userRole": { "type": "string", "enum": ["owner", "customer"] },
+        "avatarIndex": { "type": "number", "description": "Selected avatar style index for owners" },
+        "avatarTheme": { "type": "string", "description": "Custom color/theme styling identifier" },
+        "onboarded": { "type": "boolean" }
+      },
+      "required": ["ownerName", "email", "userRole"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Database representation of store customers under churn evaluation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "healthScore": { "type": "number" },
+        "daysSilent": { "type": "number" },
+        "riskLevel": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "revenue": { "type": "number" },
+        "nextBestAction": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "executed", "silenced"] },
+        "sentiment": { "type": "string", "enum": ["positive", "neutral", "negative"] },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name", "healthScore"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Warehouse and supply chain stock parameters",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "stock": { "type": "number" },
+        "threshold": { "type": "number" },
+        "stockoutDays": { "type": "number" },
+        "ltvImpact": { "type": "number" },
+        "decision": { "type": "string" },
+        "cashImpact": { "type": "string", "enum": ["safe", "warning", "danger"] },
+        "lifecycle": { "type": "string", "enum": ["growing", "stable", "declining", "dying"] }
+      },
+      "required": ["id", "name", "stock", "threshold"]
+    },
+    "ProfitLeak": {
+      "title": "ProfitLeak",
+      "description": "Identified accounting and supplier invoice expenses to curb",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "resolved": { "type": "boolean" }
+      },
+      "required": ["id", "category", "amount"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "A communication sync item linked with Aria alerts",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "tag": { "type": "string" }
+      },
+      "required": ["name", "phone"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A conversational logging item inside Aria communication center",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sender": { "type": "string", "enum": ["owner", "customer", "aria"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "sender", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "profiles/{profileId}": {
+      "schema": "Profile",
+      "description": "Stores user roles, core preferences and selected visual avatar stats"
+    },
+    "customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Global connected CRM entries of churn evaluating customers"
+    },
+    "products/{productId}": {
+      "schema": "Product",
+      "description": "Inventory items synced live with StockSense dashboards"
+    },
+    "leaks/{leakId}": {
+      "schema": "ProfitLeak",
+      "description": "Active financial leaks with solver tracking capabilities"
+    },
+    "contacts/{contactId}": {
+      "schema": "Contact",
+      "description": "SMS and WhatsApp dispatcher log directory of verified contacts"
+    },
+    "messages/{messageId}": {
+      "schema": "Message",
+      "description": "Communication log files for Aria and operators"
+    }
+  }
+}

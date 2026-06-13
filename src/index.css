@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@305;400;500;600;700;800&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-syne: "Syne", "Plus Jakarta Sans", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-neutral-450: #78716c;
+  --color-stone-405: #8c827a;
+  --color-stone-205: #e7e5e4;
+  --color-stone-105: #f5f5f4;
+  --color-stone-605: #57534e;
+  --color-neutral-155: #e5e5e5;
+  --color-neutral-105: #f5f5f5;
+  --color-amber-505: #f59e0b;
+  --color-stone-200: #e7e5e4;
+  --color-stone-250: #d6d3d1;
+}
+
+.dark {
+  --color-neutral-450: #d6d3d1;
+  --color-stone-405: #a8a29e;
+  --color-stone-205: #292524;
+  --color-stone-105: #1c1917;
+  --color-stone-605: #a8a29e;
+  --color-neutral-155: #44403c;
+  --color-neutral-105: #f5f5f5;
+  --color-stone-200: #292524;
+  --color-stone-250: #44403c;
+}
+
+body {
+  background-color: #F5F5F4;
+  color: #1C1917;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Omni AI",
+  "description": "Every problem. One platform. Give any small business owner the intelligence of a full operations team.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
