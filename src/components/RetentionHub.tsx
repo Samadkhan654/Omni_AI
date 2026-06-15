@@ -28,9 +28,17 @@ interface RetentionHubProps {
   customers: Customer[];
   setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
   theme: 'light' | 'dark';
+  isSimulatingLive: boolean;
+  setIsSimulatingLive: (val: boolean) => void;
 }
 
-export default function RetentionHub({ customers, setCustomers, theme }: RetentionHubProps) {
+export default function RetentionHub({ 
+  customers, 
+  setCustomers, 
+  theme,
+  isSimulatingLive,
+  setIsSimulatingLive
+}: RetentionHubProps) {
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState<'ALL' | 'HIGH' | 'MEDIUM'>('ALL');
   
@@ -175,6 +183,28 @@ export default function RetentionHub({ customers, setCustomers, theme }: Retenti
           <Play size={14} fill="currentColor" /> Launch Automated Win-back
         </button>
       </div>
+
+      {!isSimulatingLive ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center rounded-[28px] border border-dashed border-amber-500/25 bg-stone-900/10 font-sans select-none max-w-xl mx-auto my-12 w-full">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5 shadow-inner">
+            <TrendingDown size={30} className="animate-pulse" />
+          </div>
+          <h3 className="text-base font-black uppercase text-stone-100 tracking-wider">RetainFlow Offline</h3>
+          <p className="text-xs text-stone-400 mt-2 leading-relaxed max-w-sm">
+            Automated customer churn mitigation is currently in STANDBY mode. Hook up the live SSE channel pipeline from the Command Dashboard to ingest subscriber behavior feeds.
+          </p>
+          <button
+            onClick={() => {
+              setIsSimulatingLive(true);
+              localStorage.setItem('omni_dashboard_simulating', 'true');
+            }}
+            className="mt-6 px-6 py-3 bg-amber-500 hover:bg-amber-450 text-black text-[10.5px] font-black uppercase tracking-widest rounded-xl cursor-pointer transition-all shadow-lg active:scale-97 animate-pulse"
+          >
+            🔌 Enable Automated Stream
+          </button>
+        </div>
+      ) : (
+        <>
 
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -863,6 +893,8 @@ export default function RetentionHub({ customers, setCustomers, theme }: Retenti
           </motion.div>
         )}
       </AnimatePresence>
+      </>
+      )}
 
     </div>
   );

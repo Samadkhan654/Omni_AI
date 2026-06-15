@@ -444,7 +444,52 @@ export default function AriaManager({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 text-left">
+      
+      {/* Aria Studio Header */}
+      <div className={`p-6 rounded-3xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${cardBgCls}`}>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="p-1 rounded bg-amber-500/10 text-amber-500"><Sparkles size={16} /></span>
+            <span className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Engine 4</span>
+          </div>
+          <h2 className={`text-2xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#1C1917]'}`}>Aria Studio — Autonomous Control Center</h2>
+        </div>
+        <button 
+          type="button"
+          onClick={() => {
+            setShowCreatorPopup(true);
+            showToast("🛠️ Opening Custom Personality Suite...");
+          }}
+          className="px-4 py-2.5 bg-amber-500 hover:bg-amber-450 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md select-none"
+        >
+          Create Custom Co-Pilot
+        </button>
+      </div>
+
+      {/* ARIA PERFORMANCE DASHBOARD ROW */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 select-none">
+        <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-stone-900 border-stone-850' : 'bg-stone-50 border-neutral-200'} text-left`}>
+          <span className="text-[9px] text-neutral-400 uppercase font-black block tracking-widest">Cognitive Uptime</span>
+          <span className="text-lg font-mono font-black text-emerald-400 block mt-1">99.98%</span>
+          <span className="text-[8.5px] text-stone-450 block font-medium">Continuously active loop</span>
+        </div>
+        <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-stone-900 border-stone-850' : 'bg-stone-50 border-neutral-200'} text-left`}>
+          <span className="text-[9px] text-neutral-400 uppercase font-black block tracking-widest">Token Efficiency</span>
+          <span className="text-lg font-mono font-black text-amber-500 block mt-1">94.7%</span>
+          <span className="text-[8.5px] text-stone-450 block font-medium">Context cached prompts</span>
+        </div>
+        <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-stone-900 border-stone-850' : 'bg-stone-50 border-neutral-200'} text-left`}>
+          <span className="text-[9px] text-neutral-400 uppercase font-black block tracking-widest">AI Response Speed</span>
+          <span className="text-lg font-mono font-black text-sky-400 block mt-1">1.25s</span>
+          <span className="text-[8.5px] text-stone-450 block font-medium">Inference speed index</span>
+        </div>
+        <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-stone-900 border-stone-850' : 'bg-stone-50 border-neutral-200'} text-left`}>
+          <span className="text-[9px] text-neutral-400 uppercase font-black block tracking-widest">Iteration Triggers</span>
+          <span className="text-lg font-mono font-black text-purple-400 block mt-1">14,240</span>
+          <span className="text-[8.5px] text-stone-450 block font-medium">Daily automated actions</span>
+        </div>
+      </div>
       
       {/* Alert Banner / Notification */}
       <AnimatePresence>

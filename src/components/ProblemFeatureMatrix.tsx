@@ -577,7 +577,7 @@ export default function ProblemFeatureMatrix({ theme, showToast, setCurrentTab }
             Small Business Problem & Solution Matrix
           </h2>
           <p className="text-[10px] text-neutral-400 mt-1 max-w-xl">
-            A comprehensive mapping grid connecting <strong>95 small business pain points</strong> across Client Retention, Inventory Control, and Escalating Overhead Costs directly to <strong>125 actionable Omni AI tech solutions</strong>.
+            A comprehensive mapping grid connecting <strong>95 small business pain points</strong> across Client Retention, Inventory Control, and Escalating Overhead Costs directly to <strong>125 actionable Forge AI tech solutions</strong>.
           </p>
         </div>
 
@@ -664,7 +664,7 @@ export default function ProblemFeatureMatrix({ theme, showToast, setCurrentTab }
                 </div>
                 <p className="text-[11px] text-neutral-400 leading-relaxed">
                   The **Diagnostic Problem Matrix** is an advanced operational framework containing **95 real-world small business pain points** spanning Client Retention, Inventory Controls, Overhead Costs, and Cross-Ops. 
-                  By selecting your bottlenecks, our engine executes a **Cross-Correlation Sweep** to map those problems directly onto the **125 Master Feature Blueprints** in Omni AI.
+                  By selecting your bottlenecks, our engine executes a **Cross-Correlation Sweep** to map those problems directly onto the **125 Master Feature Blueprints** in Forge AI.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3.5 pt-3.5 border-t border-dashed border-stone-100 dark:border-stone-850/60">
                   <div className="space-y-1">
@@ -821,7 +821,7 @@ export default function ProblemFeatureMatrix({ theme, showToast, setCurrentTab }
                   <p className="text-[10px] text-neutral-400">
                     {selectedProblems.length === 0 
                       ? "Select one or more small business problems from the matrix above, then click Map Resolutions to render linked platform features!"
-                      : `You've identified ${selectedProblems.length} client / inventory pain points. We've matched ${recommendedFeatures.length} precise features within Omni AI to solve them!`
+                      : `You've identified ${selectedProblems.length} client / inventory pain points. We've matched ${recommendedFeatures.length} precise features within Forge AI to solve them!`
                     }
                   </p>
                 </div>

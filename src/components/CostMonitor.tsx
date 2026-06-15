@@ -21,6 +21,9 @@ interface CostMonitorProps {
   leaks: ProfitLeak[];
   setLeaks: React.Dispatch<React.SetStateAction<ProfitLeak[]>>;
   theme: 'light' | 'dark';
+  onTriggerToast?: (msg: string) => void;
+  isSimulatingLive: boolean;
+  setIsSimulatingLive: (val: boolean) => void;
 }
 
 export interface ExpenseAlert {
@@ -32,7 +35,14 @@ export interface ExpenseAlert {
   resolved: boolean;
 }
 
-export default function CostMonitor({ leaks, setLeaks, theme }: CostMonitorProps) {
+export default function CostMonitor({ 
+  leaks, 
+  setLeaks, 
+  theme, 
+  onTriggerToast,
+  isSimulatingLive,
+  setIsSimulatingLive
+}: CostMonitorProps) {
   // Alert logs
   const [alerts, setAlerts] = useState<ExpenseAlert[]>([
     { id: '1', category: 'Software creep', percent: 18, amount: 340, impact: 'Duplicate service licensing detected under sub-accounts', resolved: false },
@@ -169,6 +179,28 @@ export default function CostMonitor({ leaks, setLeaks, theme }: CostMonitorProps
         </div>
       </div>
 
+      {!isSimulatingLive ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center rounded-[28px] border border-dashed border-amber-500/25 bg-stone-900/10 font-sans select-none max-w-xl mx-auto my-12 w-full">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5 shadow-inner">
+            <DollarSign size={30} className="animate-pulse" />
+          </div>
+          <h3 className="text-base font-black uppercase text-stone-100 tracking-wider">CostGuard Offline</h3>
+          <p className="text-xs text-stone-400 mt-2 leading-relaxed max-w-sm">
+            AI profit metrics, duplicate transaction alerts, and supplier cost auditing are currently standing by. Hook up your live telemetry feed stream to start monitoring leaks instantly.
+          </p>
+          <button
+            onClick={() => {
+              setIsSimulatingLive(true);
+              localStorage.setItem('omni_dashboard_simulating', 'true');
+            }}
+            className="mt-6 px-6 py-3 bg-amber-500 hover:bg-amber-450 text-black text-[10.5px] font-black uppercase tracking-widest rounded-xl cursor-pointer transition-all shadow-lg active:scale-97 animate-pulse"
+          >
+            🔌 Link Live Accounts
+          </button>
+        </div>
+      ) : (
+        <>
+
       {/* CFO Brief Banner */}
       <div className="bg-gradient-to-br from-[#1C1917] to-[#292524] rounded-[32px] p-6 text-white relative overflow-hidden shadow-sm">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.15)_0%,transparent_60%)] pointer-events-none"></div>
@@ -186,6 +218,46 @@ export default function CostMonitor({ leaks, setLeaks, theme }: CostMonitorProps
             <span className="text-3xl font-mono font-black text-amber-500 mt-1">+${savingsUnlocked}/mo</span>
             <span className="text-[10px] text-green-400 font-bold mt-1">If all active leaks are plugged</span>
           </div>
+        </div>
+      </div>
+
+      {/* PROFIT LEAK OF THE WEEK WIDGET */}
+      <div className={`p-5 rounded-[24px] border border-red-500/25 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-red-500/[0.02] shadow-sm`}>
+        <div className="absolute top-0 right-0 p-1.5 px-3 bg-red-500/15 text-red-400 font-mono text-[7px] font-black uppercase rounded-bl-2xl tracking-widest select-none animate-pulse">
+          ⚠️ ACTIVE WEEKLY FLIGHT OUTFLOW
+        </div>
+        
+        <div className="space-y-1 text-left max-w-2xl">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-500 border border-red-500/20 text-[8px] font-black font-mono tracking-widest uppercase">PROFIT LEAK OF THE WEEK</span>
+            <span className="text-stone-400 text-[9px] font-mono font-bold select-none">[Aria CFO Audited]</span>
+          </div>
+          <h4 className="text-sm font-black text-white uppercase font-sans">Packaging Logistics Base-Rate Overcharge with Supplier B</h4>
+          <p className="text-xs text-stone-300 leading-relaxed font-sans">
+            Supplier B raised baseline packaging box rates by <strong className="text-red-400 font-mono">24% without contract caps</strong>. This leaks <strong className="text-amber-500 font-mono">$480 / month</strong> in excess capital. Aria suggests locking a 5% max contract cap using our negotiation playbook.
+          </p>
+        </div>
+
+        <div className="flex md:flex-col gap-2 w-full md:w-auto shrink-0 select-none">
+          <button 
+            type="button"
+            onClick={() => handleCfoChat("Draft negotiation email for Supplier B")}
+            className="px-4 py-2 bg-[#12100f] border border-stone-850 hover:bg-stone-900 transition-colors text-stone-300 text-[9.5px] font-black uppercase tracking-wider rounded-xl cursor-pointer text-center w-full"
+          >
+            Draft Reprisal Script
+          </button>
+          <button 
+            type="button"
+            onClick={() => {
+              resolveAlert('3');
+              if (onTriggerToast) {
+                onTriggerToast("🔒 Resolved! Enacted 5% package ceiling. Saved $480/mo leak successfully!");
+              }
+            }}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-450 hover:scale-101 text-black text-[9.5px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer text-center w-full"
+          >
+            Resolve with 5% Ceiling
+          </button>
         </div>
       </div>
 
@@ -427,6 +499,8 @@ export default function CostMonitor({ leaks, setLeaks, theme }: CostMonitorProps
         </section>
 
       </div>
+      </>
+      )}
 
     </div>
   );

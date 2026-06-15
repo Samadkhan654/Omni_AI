@@ -64,6 +64,7 @@ export default function FloatingChatbot({
   ariaAvatar = "🤖"
 }: FloatingChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [chattyMode, setChattyMode] = useState(true);
   const [persona, setPersona] = useState<Persona>('visitor');
   const [messages, setMessages] = useState<Record<Persona, Message[]>>(() => {
     const saved = localStorage.getItem('omni_floating_messages');
@@ -80,7 +81,7 @@ export default function FloatingChatbot({
         {
           id: 'v1',
           sender: 'aria',
-          text: `Hello! Welcome to Omni AI. I am Aria, your operational co-pilot. I am here to help you explore how Omni AI empowers small businesses to scale. Are you looking to understand our features, check pricing, or start a live preview?`,
+          text: `Hello! Welcome to Forge AI. I am Aria, your operational co-pilot. I am here to help you explore how Forge AI empowers small businesses to scale. Are you looking to understand our features, check pricing, or start a live preview?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ],
@@ -129,20 +130,25 @@ export default function FloatingChatbot({
     switch (role) {
       case 'visitor':
         return [
-          { q: 'What is Omni AI?', id: 'v_what' },
+          { q: 'What is Forge AI?', id: 'v_what' },
           { q: 'How much does it cost?', id: 'v_cost' },
-          { q: 'Take Onboarding Tour', id: 'v_tour' }
+          { q: 'Take Onboarding Tour', id: 'v_tour' },
+          { q: 'Tell me a funny joke! 🤖', id: 'v_joke' },
+          { q: 'Inspiring Tech Quote 💡', id: 'v_quote' }
         ];
       case 'customer':
         return [
           { q: 'What is the return policy?', id: 'c_return' },
           { q: 'Is customer support online?', id: 'c_support' },
+          { q: 'Praise my store! ❤️', id: 'c_praise' },
           { q: 'What is the business location?', id: 'c_loc' }
         ];
       case 'owner':
         return [
           { q: 'Adjust Theme Mode', id: 'o_theme' },
           { q: 'How do I resolve profit leaks?', id: 'o_leaks' },
+          { q: 'Robotic Business Tip 💡', id: 'o_tactical' },
+          { q: 'Aria, tell me a joke 🎭', id: 'o_joke' },
           { q: 'Relaunch Setup Wizard', id: 'o_setup' }
         ];
     }
@@ -165,10 +171,14 @@ export default function FloatingChatbot({
 
       // Check predefined triggers or fuzzy match
       if (persona === 'visitor') {
-        if (questionId === 'v_what' || normalized.includes('what is') || normalized.includes('how does')) {
-          botReply = "Omni AI is a consolidated business intelligence suite. Inside, you will find RetainFlow (to save lost clients), CostGuard (to isolate profit leaks), and StockSense (to prevent inventory stockouts). It aggregates every process into a unified workspace.";
+        if (questionId === 'v_joke' || normalized.includes('joke')) {
+          botReply = "Beep-boop-beep! 🤖 Why did the programmer quit his business? Because he didn't get arrays! 😄 Or wait, here is an operational one for you: Why did the database blush? Because it saw the table's joins! 😭 Operations can be funny!";
+        } else if (questionId === 'v_quote' || normalized.includes('quote')) {
+          botReply = "Gazing at the telemetry solar winds... 🌌 Here is an inspiring quote from Steve Jobs: 'Design is not just what it looks like and feels like. Design is how it works.' Let's make your system work like perfect clockwork today!";
+        } else if (questionId === 'v_what' || normalized.includes('what is') || normalized.includes('how does')) {
+          botReply = "Forge AI is a consolidated business intelligence suite. Inside, you will find RetainFlow (to save lost clients), CostGuard (to isolate profit leaks), and StockSense (to prevent inventory stockouts). It aggregates every process into a unified workspace.";
         } else if (questionId === 'v_cost' || normalized.includes('pricing') || normalized.includes('cost') || normalized.includes('plan')) {
-          botReply = "Omni AI offers three straightforward plans starting at $29/mo (Starter), $79/mo (Growth Suite), and $249/mo for large corporate clients. I can instantly direct you to our Premium pricing matrix!";
+          botReply = "Forge AI offers three straightforward plans starting at $29/mo (Starter), $79/mo (Growth Suite), and $249/mo for large corporate clients. I can instantly direct you to our Premium pricing matrix!";
           actionable = {
             label: 'View Pricing Matrix',
             action: () => setCurrentTab('pricing')
@@ -184,10 +194,12 @@ export default function FloatingChatbot({
             }
           };
         } else {
-          botReply = `Omni AI is configured for custom business rules of "${profile.storeName}". Feel free to start a free demo tour of the features using the button above, or navigate tabs via our sidebar panel!`;
+          botReply = `Forge AI is configured for custom business rules of "${profile.storeName}". Feel free to start a free demo tour of the features using the button above, or navigate tabs via our sidebar panel!`;
         }
       } else if (persona === 'customer') {
-        if (questionId === 'c_return' || normalized.includes('return') || normalized.includes('refund') || normalized.includes('policy')) {
+        if (questionId === 'c_praise' || normalized.includes('praise') || normalized.includes('love') || normalized.includes('great')) {
+          botReply = `Oh, thank you so much! ❤️ Your support for "${profile.storeName}" is what keeps us going. We push extreme code updates hourly to ensure your customer journeys are completely frictionless!`;
+        } else if (questionId === 'c_return' || normalized.includes('return') || normalized.includes('refund') || normalized.includes('policy')) {
           botReply = `According to our system handbook for "${profile.storeName}", items can be returned in original conditions within 30 days of acquisition. For personal queries, email us at: ${profile.email}.`;
         } else if (questionId === 'c_support' || normalized.includes('support') || normalized.includes('operator')) {
           botReply = `Live customer support for "${profile.storeName}" is monitored dynamically with Aria AI. Over 89.4% of customer threads are resolved instantly. Feel free to leave a backup inquiry or dial our notification backup line: ${profile.phone}.`;
@@ -197,7 +209,15 @@ export default function FloatingChatbot({
           botReply = `Your message has been processed inside our local database memory for "${profile.storeName}". Our executive agent will align recommendations soon!`;
         }
       } else if (persona === 'owner') {
-        if (questionId === 'o_theme' || normalized.includes('theme') || normalized.includes('color') || normalized.includes('light') || normalized.includes('dark')) {
+        if (questionId === 'o_joke' || normalized.includes('joke')) {
+          botReply = "Beep boop! 🤖 Did you know? There are 10 types of people in the world: those who understand binary, and those who don't! 😂 Also: why do programmers prefer dark mode? Because light attracts bugs! 🦟 Keep up the high spirits, Captain!";
+        } else if (questionId === 'o_tactical' || normalized.includes('tip') || normalized.includes('tactical') || normalized.includes('advice')) {
+          botReply = `Scanning core parameters... 🛰️ Active recommendation: Your customer cart recovery triggers are currently outstanding. I advocate deploying dynamic coupon triggers in RetainFlow. This typically decreases abandoned transactions by 24.5%!`;
+          actionable = {
+            label: 'Open RetainFlow Automation',
+            action: () => setCurrentTab('retainflow')
+          };
+        } else if (questionId === 'o_theme' || normalized.includes('theme') || normalized.includes('color') || normalized.includes('light') || normalized.includes('dark')) {
           botReply = `Processing interactive theme toggling. Adjusting user palette...`;
           actionable = {
             label: 'Force Theme Toggle',
@@ -228,10 +248,23 @@ export default function FloatingChatbot({
         }
       }
 
+      // Prepend chatty prefix if chattyMode is active
+      if (chattyMode) {
+        const chattyPrefixes = [
+          "Beep boop! 📡 Scanning operational feeds... Oh, that is a fantastic inquiry! ",
+          "Greetings, human partner! 🚀 Analyzing system parameters... Here is what I resolved: ",
+          "Affirmative! 🌐 Relaying cognitive feedback: ",
+          "Telemetry checks are perfect! 🛰️ Let me fetch that for you: ",
+          "Processing thoughts instantly... ⚡ "
+        ];
+        const randomPrefix = chattyPrefixes[Math.floor(Math.random() * chattyPrefixes.length)];
+        botReply = `${randomPrefix}${botReply}`;
+      }
+
       let toneSuffix = "";
       if (ariaTone.toLowerCase().includes('humour') || ariaTone.toLowerCase().includes('humor') || ariaTone.toLowerCase().includes('witty')) {
         const jokes = [
-          " (P.S. Why did the computer go to the doctor? It had a bad case of the cache! 🦠 Haha!)",
+          " (P.S. Why do programmers wear glasses? Because they can't C#! 🤓 Haha!)",
           " (By the way: why was the cell phone wearing glasses? Because it lost its contacts! 📞 Keep smiling!)",
           " (Remember: code is like humor. When you have to explain it, it’s bad! 😄)"
         ];
@@ -290,7 +323,7 @@ export default function FloatingChatbot({
         {
           id: 'v1',
           sender: 'aria',
-          text: `Hello! Welcome to Omni AI. I am Aria, your operational co-pilot. I am here to help you explore how Omni AI empowers small businesses to scale. Are you looking to understand our features, check pricing, or start a live preview?`,
+          text: `Hello! Welcome to Forge AI. I am Aria, your operational co-pilot. I am here to help you explore how Forge AI empowers small businesses to scale. Are you looking to understand our features, check pricing, or start a live preview?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ],
@@ -396,6 +429,31 @@ export default function FloatingChatbot({
                   <X size={15} />
                 </button>
               </div>
+            </div>
+
+            {/* Interactive Alert banner */}
+            <div className="bg-amber-500/10 border-b border-amber-500/10 px-3.5 py-1.5 flex items-center justify-between text-[10px] font-mono select-none">
+              <div className="flex items-center gap-1.5 text-amber-500">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <span className="font-bold uppercase tracking-wider text-[9px]">Aria Cognitive Chatty Mode</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setChattyMode(!chattyMode);
+                  showToast(chattyMode ? "🤐 Quiet mode enabled. Aria is now concise." : "🗣️ Talkative mode enabled! Aria is highly verbal & witty.");
+                }}
+                className={`px-2 py-0.5 rounded text-[8.5px] font-black uppercase border cursor-pointer transition-all ${
+                  chattyMode 
+                    ? 'bg-amber-500 text-black border-amber-500 font-extrabold' 
+                    : 'bg-stone-900 text-stone-400 border-stone-800'
+                }`}
+              >
+                {chattyMode ? '🗣️ Talkative On' : '🤐 Quiet On'}
+              </button>
             </div>
 
             {/* Persona Segment Tabs Control */}

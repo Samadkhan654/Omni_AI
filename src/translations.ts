@@ -70,7 +70,7 @@ export interface TranslationDictionary {
 
 export const translations: Record<Language, TranslationDictionary> = {
   en: {
-    brandLogo: "Omni AI",
+    brandLogo: "Forge AI",
     sandboxMode: "Sandbox System",
     launchConsole: "LAUNCH COMPASS SYSTEM",
     backToLanding: "← Back to Landing",
@@ -79,13 +79,13 @@ export const translations: Record<Language, TranslationDictionary> = {
     activeCore: "ACTIVE COGNITIVE CORE",
     syncChecked: "Aria Sync Checked",
     
-    navDashboard: "Operational Hub",
-    navRetainFlow: "Predictive Loyalty",
-    navCostGuard: "Profit Protector",
-    navStockSense: "Supply Genius",
-    navAria: "Aria Co-Pilot",
-    navPricing: "Premium Plans",
-    navSettings: "System Settings",
+    navDashboard: "Command Center",
+    navRetainFlow: "RetainFlow",
+    navCostGuard: "CostGuard",
+    navStockSense: "StockSense",
+    navAria: "Aria Studio",
+    navPricing: "Plans",
+    navSettings: "Settings",
     
     welcomePopTitle: "✨ Welcome Command Line Activated",
     welcomePopDesc: {
@@ -131,7 +131,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     heroBadge: "Autonomous Small Merchant Intelligence Suite",
     heroHeaderPart1: "Every problem.",
     heroHeaderPart2: "One interface.",
-    heroDesc: "Unlock standard retail intelligence. Omni AI combines customer churn tracking, CFO margin optimization, and automated inventory systems together under one intelligent breathing avatar.",
+    heroDesc: "Unlock standard retail intelligence. Forge AI combines customer churn tracking, CFO margin optimization, and automated inventory systems together under one intelligent breathing avatar.",
     heroCTA1: "ENTER WORKSPACE DASHBOARD",
     heroCTA2: "MEET ARIA AVATAR",
     capEngines: "Capability Engines",
@@ -139,7 +139,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     enterpriseSpecs: "Enterprise Specs"
   },
   es: {
-    brandLogo: "Omni IA",
+    brandLogo: "Forge IA",
     sandboxMode: "Sistema de Pruebas",
     launchConsole: "INICIAR SISTEMA COMPASS",
     backToLanding: "← Volver al Inicio",
@@ -200,7 +200,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     heroBadge: "Suite de Inteligencia Autónoma para Pequeños Comercios",
     heroHeaderPart1: "Cada problema.",
     heroHeaderPart2: "Una sola interfaz.",
-    heroDesc: "Desbloquee inteligencia empresarial avanzada. Omni IA combina retención de clientes, optimización de presupuesto de CFO y gestión de stock autónoma.",
+    heroDesc: "Desbloquee inteligencia empresarial avanzada. Forge IA combina retención de clientes, optimización de presupuesto de CFO y gestión de stock autónoma.",
     heroCTA1: "ENTRAR AL PANEL DE TRABAJO",
     heroCTA2: "CONOCER A ARIA AVATAR",
     capEngines: "Motores de Capacidad",
@@ -208,7 +208,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     enterpriseSpecs: "Especificaciones"
   },
   fr: {
-    brandLogo: "Omni IA",
+    brandLogo: "Forge IA",
     sandboxMode: "Système d'Essai",
     launchConsole: "LANCER SYSTÈME COMPASS",
     backToLanding: "← Retour à l'accueil",
@@ -277,7 +277,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     enterpriseSpecs: "Spécifications"
   },
   de: {
-    brandLogo: "Omni KI",
+    brandLogo: "Forge KI",
     sandboxMode: "Sandbox System",
     launchConsole: "COMPASS SYSTEM STARTEN",
     backToLanding: "← Zurück zur Startseite",
@@ -338,7 +338,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     heroBadge: "Autonome Merchant-Intelligence Suite",
     heroHeaderPart1: "Jedes Problem.",
     heroHeaderPart2: "Eine Oberfläche.",
-    heroDesc: "Gewinnen Sie die volle Kontrolle über Ihre Händlermargen. Omni KI bündelt Churn-Analysen, Einsparungspotenziale und intelligente Bestandswarnungen an einem zentralen Ort.",
+    heroDesc: "Gewinnen Sie die volle Kontrolle über Ihre Händlermargen. Forge KI bündelt Churn-Analysen, Einsparungspotenziale und intelligente Bestandswarnungen an einem zentralen Ort.",
     heroCTA1: "DASHBOARD ÖFFNEN",
     heroCTA2: "ARIA AVATAR TREFFEN",
     capEngines: "Spezialmodule",
@@ -346,7 +346,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     enterpriseSpecs: "Enterprise Datenblatt"
   },
   ja: {
-    brandLogo: "Omni AI",
+    brandLogo: "Forge AI",
     sandboxMode: "サンドボックス",
     launchConsole: "COMPASSシステムを起動",
     backToLanding: "← ランディングページへ戻る",
@@ -407,7 +407,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     heroBadge: "中小規模事業者向け自律型ビジネス意思決定スイート",
     heroHeaderPart1: "すべての店舗課題を、",
     heroHeaderPart2: "ひとつの画面で解決。",
-    heroDesc: "一般的な分析ツールの煩雑さにうんざりしていませんか？ Omni AIは、顧客解約予兆、コスト漏洩シールド、在庫自動補充計画を単一の直感的なアバターに統合します。",
+    heroDesc: "一般的な分析ツールの煩雑さにうんざりしていませんか？ Forge AIは、顧客解約予兆、コスト漏洩シールド、在庫自動補充計画を単一の直感的なアバターに統合します。",
     heroCTA1: "管理ワークスペースへ入る",
     heroCTA2: "ARIAスマートAIと対話する",
     capEngines: "基幹管制システム群",

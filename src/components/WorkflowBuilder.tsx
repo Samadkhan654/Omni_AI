@@ -624,7 +624,7 @@ export default function WorkflowBuilder({ theme, onTriggerToast, tokenBalance, c
         };
       } else if (activeNode.id === 'operator-notify') {
         output = {
-          sentToChannels: ['Slack-Support-Omni', 'Dashboard-Alert-Desk'],
+          sentToChannels: ['Slack-Support-Forge', 'Dashboard-Alert-Desk'],
           criticality: 'URGENT_HANDOFF',
           payloadBody: `Outreach to ${payload.customerName} regarding recent transaction friction.`
         };
@@ -1188,22 +1188,22 @@ export default function WorkflowBuilder({ theme, onTriggerToast, tokenBalance, c
   };
 
   return (
-    <div className="space-y-4 font-sans select-none">
+    <div className="space-y-6 font-sans select-none">
       
       {/* HEADER BANNER */}
       <div className={`p-4 px-5 rounded-[24px] border flex flex-col md:flex-row md:items-center justify-between gap-3 ${
-        isDark ? 'bg-stone-900 border-stone-800 text-white' : 'bg-white border-stone-200 text-[#1C1917]'
+        isDark ? 'bg-stone-900 border-stone-880 text-white' : 'bg-white border-stone-200 text-[#1C1917]'
       }`}>
-        <div className="space-y-0.5">
+        <div className="space-y-1 text-left">
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider bg-amber-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider bg-amber-500/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
               <Layers size={9} />
-              n8n Visual Automation Suite v2.4
+              Flow Builder Engine v2.5
             </span>
           </div>
-          <h2 className="font-sans text-lg font-black tracking-tight uppercase leading-none">Visual Operations flow engine</h2>
-          <p className="text-[11px] text-stone-500 dark:text-stone-300">
-            Build live connected graph charts with conditional evaluation branches, custom JS sandboxes, and automated Gemini AI integrations.
+          <h2 className="font-sans text-xl font-black tracking-tight uppercase leading-none text-white">Flow Builder — Automation Workspace</h2>
+          <p className="text-[11px] text-stone-400">
+            Build live connected graph charts with conditional branches, custom JS sandboxes, and automated Gemini AI node integrations.
           </p>
         </div>
 
@@ -1214,7 +1214,7 @@ export default function WorkflowBuilder({ theme, onTriggerToast, tokenBalance, c
             className="px-3 py-1.5 text-[10px] bg-[#F59E0B] text-black hover:bg-amber-400 font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-1 shrink-0 shadow-sm"
             title="Launch dynamic n8n SMB Automation template picker"
           >
-            <span>🪄 SMB Wizard</span>
+            <span>Templates Wizard</span>
           </button>
 
           <button
@@ -1317,22 +1317,50 @@ export default function WorkflowBuilder({ theme, onTriggerToast, tokenBalance, c
         </div>
       </div>
 
-      {/* Dynamic Workflow Analytics telemetry block */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* WORKFLOW TEMPLATES GALLERY CARD GRID (PREFABRICATED FOR QUICKSTART - CONDESED ROW) */}
+      <div className="space-y-1.5 text-left select-none">
+        <div className={`p-2 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-3 ${
+          isDark ? 'bg-stone-900/40 border-stone-850' : 'bg-white border-stone-200'
+        }`}>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest font-mono">Workflow Recipes:</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 select-none">
+            <button
+              onClick={() => { applyWizardPreset('lead'); onTriggerToast("🔌 Ingested Stripe Cart Checkout Rescue Workflow."); }}
+              className="px-2.5 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 text-[9.5px] font-black uppercase flex items-center gap-1 cursor-pointer transition-all active:scale-95 animate-pulse"
+            >
+              <span>⚡ Lead Rescue (Stripe)</span>
+            </button>
+            <button
+              onClick={() => { applyWizardPreset('silent'); onTriggerToast("🔌 Ingested Silent VIP Recall Workflow."); }}
+              className="px-2.5 py-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 text-amber-500 text-[9.5px] font-black uppercase flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+            >
+              <span>⏰ VIP Recovery (SMS)</span>
+            </button>
+            <button
+              onClick={() => { applyWizardPreset('b2b'); onTriggerToast("🔌 Ingested Supply Inventory Stock Warning Workflow."); }}
+              className="px-2.5 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 text-cyan-400 text-[9.5px] font-black uppercase flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+            >
+              <span>📦 Stock Level (Supply warning)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Dynamic Workflow Analytics telemetry block - SUPER COMPACT ROW */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
-          { label: 'Active Pipeline Health', value: '99.8%', desc: 'SLA uptime rate', color: 'text-emerald-500 dark:text-emerald-400' },
-          { label: 'Calculated Cost Savings', value: '$4,320/mo', desc: 'Overhead replaced', color: 'text-amber-500 dark:text-amber-400' },
-          { label: 'Manual Labor Hours Saved', value: '144 hrs/mo', desc: 'SOPs automated', color: 'text-blue-500 dark:text-blue-400' },
-          { label: 'Executed Actions Count', value: '12,842 runs', desc: 'API webhooks piped', color: 'text-purple-500 dark:text-purple-400' }
+          { label: 'Active Health', value: '99.8%', color: 'text-emerald-450' },
+          { label: 'Calculated Savings', value: '$4,320/mo', color: 'text-amber-455' },
+          { label: 'Labor Hours Replaced', value: '144 hrs/mo', color: 'text-blue-450' },
+          { label: 'Executed Runs', value: '12,842', color: 'text-purple-450' }
         ].map((stat, sIdx) => (
-          <div key={sIdx} className={`p-4 rounded-2xl border ${
-            isDark ? 'bg-stone-950/45 border-stone-850' : 'bg-white border-stone-200 shadow-xs'
+          <div key={sIdx} className={`px-3.5 py-1 rounded-lg border flex items-center justify-between gap-1 text-left ${
+            isDark ? 'bg-stone-950/20 border-stone-850/80' : 'bg-white border-stone-200'
           }`}>
-            <span className="text-[8.5px] font-black uppercase text-stone-400 block tracking-widest">{stat.label}</span>
-            <div className="flex items-baseline gap-1.5 mt-1">
-              <span className={`text-lg font-black tracking-tight ${stat.color}`}>{stat.value}</span>
-              <span className="text-[9px] text-stone-500 font-bold">({stat.desc})</span>
-            </div>
+            <span className="text-[8px] font-bold uppercase text-stone-400 font-mono tracking-tight">{stat.label}</span>
+            <span className={`text-[10px] font-black font-mono tracking-tight ${stat.color}`}>{stat.value}</span>
           </div>
         ))}
       </div>
@@ -1387,7 +1415,7 @@ export default function WorkflowBuilder({ theme, onTriggerToast, tokenBalance, c
                 Generative Natural-Language Flow compiler
               </span>
               <p className="text-[10px] text-stone-500 dark:text-stone-400">
-                Type your operational scenario in plain English (e.g., *"when stripe invoice is paid, analyze with Gemini and send WhatsApp coupon"*). Omni AI will compile and wire nodes instantly!
+                Type your operational scenario in plain English (e.g., *"when stripe invoice is paid, analyze with Gemini and send WhatsApp coupon"*). Forge AI will compile and wire nodes instantly!
               </p>
             </div>
 

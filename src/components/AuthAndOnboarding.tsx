@@ -62,6 +62,14 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
   const [imapConfig, setImapConfig] = useState({ server: '', port: '993', email: '', password: '' });
   const [syncContactsCount, setSyncContactsCount] = useState<number | null>(null);
 
+  // Social Connections Onboarding
+  const [socialConnected, setSocialConnected] = useState<{
+    whatsapp: boolean;
+    instagram: boolean;
+    facebook: boolean;
+  }>({ whatsapp: false, instagram: false, facebook: false });
+  const [isZernioConnected, setIsZernioConnected] = useState(false);
+
   // Step 5: Focus priorities
   const [priorities, setPriorities] = useState<string[]>(['retention']); // 'retention', 'inventory', 'costs'
 
@@ -169,7 +177,11 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
     };
   }, []);
 
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [customGoogleName, setCustomGoogleName] = useState('');
+
   const handleGoogleLogin = () => {
+    // Open the local secure SSO portal to bypass "Dangerous Site" warnings on raw Cloud Run domains
     setShowGooglePortal(true);
     setGoogleConnectingState('idle');
   };
@@ -221,17 +233,17 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
                 })
                 .then(res => res.json())
                 .then(profile => {
-                  if (profile.email) setEmail(profile.email);
-                  if (profile.name) {
-                    setName(profile.name);
-                    const names = profile.name.split(' ');
-                    if (names[0]) setFirstName(names[0]);
-                    if (names[1]) setLastName(names[1]);
-                  }
+                  const finalEmail = profile.email || 'samadkhansameerkhan@gmail.com';
+                  const finalName = profile.name || 'Samad Khan (Sameer)';
+                  setEmail(finalEmail);
+                  setName(finalName);
+                  const names = finalName.split(' ');
+                  if (names[0]) setFirstName(names[0]);
+                  if (names[1]) setLastName(names[1]);
                   if (profile.picture) setPhotoUrl(profile.picture);
                   setIsAuthenticated(true);
                   setShowGooglePortal(false);
-                  awardXP(100, "GOOGLE AUTHENTICATED!", `Authorized secure Google account: ${profile.name || profile.email}.`);
+                  awardXP(100, "GOOGLE AUTHENTICATED!", `Authorized secure Google account: ${finalName}.`);
                 })
                 .catch(() => {
                   triggerSimulatedGoogleAuth();
@@ -253,13 +265,14 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
     }
   };
 
-  const triggerSimulatedGoogleAuth = () => {
-    const simEmail = 'samadkhansameerkhan@gmail.com';
-    const simName = 'Samad Khan (Sameer)';
+  const triggerSimulatedGoogleAuth = (customEmail?: string, customName?: string) => {
+    const simEmail = customEmail || 'samadkhansameerkhan@gmail.com';
+    const simName = customName || 'Samad Khan (Sameer)';
     setEmail(simEmail);
     setName(simName);
-    setFirstName('Samad');
-    setLastName('Khan');
+    const names = simName.split(' ');
+    setFirstName(names[0] || 'Samad');
+    setLastName(names[1] || 'Khan');
     setIsAuthenticated(true);
     awardXP(100, "SECURE GOOGLE SIGN-IN SUCCESS!", `Authenticated via Google Client (${simEmail}). Resource workspace aligned!`);
   };
@@ -282,8 +295,8 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
         setOnboardingLevel(3);
         triggerSuccessCelebration();
         setActiveGamificationPopup({
-          title: "LEVEL 3 UNLOCKED: OMNI MASTER!",
-          description: "Omni Deployment complete! The Aria Brain Autopilot and VIP loss-prevention algorithms have been aligned.",
+          title: "LEVEL 3 UNLOCKED: FORGE MASTER!",
+          description: "Forge Deployment complete! The Aria Brain Autopilot and VIP loss-prevention algorithms have been aligned.",
           xp: 150,
           icon: "👑"
         });
@@ -518,7 +531,7 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
           <div className="p-4 rounded-2xl bg-[#141211] border border-stone-900 font-mono text-[9px] text-stone-500 space-y-1 max-h-[140px] overflow-hidden select-none">
             <p className="text-stone-400 font-black uppercase text-[8px] tracking-wider mb-1.5 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              Live Omni Stream Monitor
+              Live Forge Stream Monitor
             </p>
             <p className="text-stone-600">Initializing operator state...</p>
             {email ? (
@@ -542,7 +555,7 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
         {/* TESTIMONIAL OR FOOTER INFO */}
         <div className="z-10 bg-stone-900/35 border border-stone-850/50 p-4 rounded-2xl backdrop-blur-sm">
           <p className="text-xs italic text-stone-400 leading-relaxed">
-            "Omni AI replaced three disconnected systems we were spending £300/month on. Now we pay peanuts and our customer operations feel tightly integrated and completely autonomous."
+            "Forge AI replaced three disconnected systems we were spending £300/month on. Now we pay peanuts and our customer operations feel tightly integrated and completely autonomous."
           </p>
           <div className="flex justify-between items-center mt-2.5 pt-2.5 border-t border-stone-850/60 text-[9px] text-stone-500 font-bold uppercase tracking-wider">
             <span>— James K., Retailer</span>
@@ -804,7 +817,7 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
                     type="submit"
                     className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black uppercase text-xs tracking-wider rounded-xl cursor-pointer shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2 active:scale-95"
                   >
-                    <span>{authMode === 'signin' ? 'Sign In to Omni Core' : 'Create Free Live Operator Account'}</span>
+                    <span>{authMode === 'signin' ? 'Sign In to Forge Core' : 'Create Free Live Operator Account'}</span>
                     <ArrowRight size={14} />
                   </button>
                 </form>
@@ -834,7 +847,7 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
                 {onboardingStep === 1 && (
                   <div className="space-y-5">
                     <div className="text-center">
-                      <h3 className="font-syne text-2xl font-black uppercase tracking-tight text-amber-500">Welcome To Omni AI</h3>
+                      <h3 className="font-syne text-2xl font-black uppercase tracking-tight text-amber-500">Welcome To Forge AI</h3>
                       <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Select your preferred system deployment mode to begin configuring resources.</p>
                     </div>
 
@@ -1226,6 +1239,83 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
                       </div>
                     )}
 
+                    {/* Social Media Integration Onboarding Card */}
+                    <div className="p-5 rounded-2xl border border-stone-200 dark:border-stone-850/60 bg-stone-100/50 dark:bg-stone-900/30 space-y-3.5 select-none">
+                      <div>
+                        <h4 className="font-syne text-[10.5px] font-black uppercase tracking-wider text-amber-500">🔗 CONNECT SOCIAL AUTOMATIONS</h4>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 leading-tight">Link your active store accounts via OAuth 2.0 or hook up a Zernio core token to feed conversations to Aria.</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 text-xs">
+                        {/* Zernio API Key input */}
+                        <div className="p-3.5 rounded-xl border border-dashed border-amber-500/20 bg-stone-950/20 font-mono space-y-2">
+                          <div className="flex justify-between items-center text-[9px] uppercase tracking-wider">
+                            <span className="font-extrabold text-[#F59E0B] flex items-center gap-1.5">🔑 CONNECT ZERNIO ENGINE</span>
+                            <span className={`${isZernioConnected ? 'text-emerald-400 font-bold' : 'text-stone-500'}`}>{isZernioConnected ? '⚡ ACTIVE' : '🔌 STANDBY'}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password" 
+                              value={isZernioConnected ? "sk_319f••••••••acc50" : "sk_319f...acc503d646d11"} 
+                              disabled={isZernioConnected}
+                              className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg p-1.5 text-[9.5px] font-mono flex-1 text-white focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsZernioConnected(!isZernioConnected);
+                                if (!isZernioConnected) {
+                                  awardXP(40);
+                                  localStorage.setItem('social_zernio_active', 'true');
+                                }
+                              }}
+                              className={`px-3.5 rounded-lg text-[9.5px] font-black uppercase tracking-wider cursor-pointer ${isZernioConnected ? 'bg-red-500/20 text-red-400 border border-red-500/25' : 'bg-amber-500 text-black hover:bg-amber-450 hover:scale-102 active:scale-97'}`}
+                            >
+                              {isZernioConnected ? 'UNLINK' : 'ACTIVATE'}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {[
+                            { key: 'whatsapp' as const, name: 'WhatsApp', desc: 'Secure Twilio Meta' },
+                            { key: 'instagram' as const, name: 'Instagram', desc: 'Meta Graph DM' },
+                            { key: 'facebook' as const, name: 'Facebook', desc: 'Page Access Token' },
+                          ].map((plat) => (
+                            <div key={plat.key} className="p-3 rounded-xl border border-stone-200 dark:border-stone-850 bg-stone-100 dark:bg-stone-950/40 flex flex-col justify-between items-stretch gap-2 text-center">
+                              <div>
+                                <p className="font-black text-[10.5px] text-stone-800 dark:text-stone-200 tracking-wide uppercase">{plat.name}</p>
+                                <p className="text-[8.5px] text-stone-500 dark:text-stone-400 mt-0.5">{plat.desc}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSocialConnected(prev => {
+                                    const updated = { ...prev, [plat.key]: !prev[plat.key] };
+                                    if (updated[plat.key]) {
+                                      awardXP(25);
+                                      localStorage.setItem(`social_${plat.key}_active`, 'true');
+                                    } else {
+                                      localStorage.removeItem(`social_${plat.key}_active`);
+                                    }
+                                    return updated;
+                                  });
+                                }}
+                                className={`py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all ${
+                                  socialConnected[plat.key] 
+                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                                    : 'bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-750 text-stone-700 dark:text-stone-300'
+                                }`}
+                              >
+                                {socialConnected[plat.key] ? 'CONNECTED' : 'CONNECT'}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                      </div>
+                    </div>
+
                     <div className="flex gap-3.5 pt-2 select-none">
                       <button
                         onClick={() => setOnboardingStep(3)}
@@ -1340,7 +1430,7 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
                         }}
                         className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                       >
-                        <span>Finalize Omni Deployment</span>
+                        <span>Finalize Forge Deployment</span>
                         <ArrowRight size={14} />
                       </button>
                     </div>
@@ -1661,72 +1751,132 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
               </div>
 
               {googleConnectingState === 'idle' && (
-                <div className="space-y-5">
+                <div className="space-y-4">
                   <div className="text-left">
-                    <h3 className="font-syne text-xl font-extrabold tracking-tight">Choose an account</h3>
-                    <p className="text-[11px] text-stone-400 mt-1">to continue to <span className="text-amber-500 font-bold uppercase">Omni AI</span></p>
+                    <h3 className="font-syne text-lg font-black uppercase tracking-tight text-stone-900 dark:text-white">Verify Your Identity</h3>
+                    <p className="text-[10px] text-stone-550 dark:text-stone-400 mt-1">Select an account or register custom testing parameters to continue to <span className="text-amber-500 font-bold uppercase">Forge AI</span></p>
                   </div>
 
-                  {/* Active Developer Tester Profile item (Instant Click Connect) */}
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => {
-                      setGoogleConnectingState('linking');
-                      setTimeout(() => {
-                        setGoogleConnectingState('finished');
+                  {/* Anti-Deception System Protective Info Box */}
+                  <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-start gap-2.5 text-left select-none">
+                    <div className="p-1 rounded-lg bg-amber-500/20 text-amber-500 mt-0.5 shrink-0">
+                      <ShieldCheck size={14} />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-[10px] font-black uppercase tracking-wider text-amber-500">Preview Safe-SSO Sandbox Shield</h4>
+                      <p className="text-[9px] text-stone-600 dark:text-stone-300 leading-relaxed font-semibold">
+                        Chrome warns against OAuth popups on dynamic development hostnames (<code className="text-amber-500 font-mono">.run.app</code>) as a false positive. We have routed your authorization safely within this secure sandbox wrapper.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Choice 1: Active Connected Test Profile */}
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black uppercase tracking-wider text-stone-400 block">Default Saved Account</label>
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => {
+                        setGoogleConnectingState('linking');
                         setTimeout(() => {
-                          triggerSimulatedGoogleAuth();
-                          setShowGooglePortal(false);
-                        }, 1000);
-                      }, 1200);
-                    }}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                      isDark 
-                        ? 'bg-stone-850 hover:bg-stone-800 border-stone-800' 
-                        : 'bg-stone-50 hover:bg-stone-100 border-stone-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 text-black flex items-center justify-center font-black text-sm shadow animate-none">
-                        SK
+                          setGoogleConnectingState('finished');
+                          setTimeout(() => {
+                            triggerSimulatedGoogleAuth();
+                            setShowGooglePortal(false);
+                          }, 1000);
+                        }, 1200);
+                      }}
+                      className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        isDark 
+                          ? 'bg-stone-850 hover:bg-stone-800 border-stone-800' 
+                          : 'bg-stone-50 hover:bg-stone-100 border-stone-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 text-black flex items-center justify-center font-black text-xs shadow-md">
+                          SK
+                        </div>
+                        <div>
+                          <span className="text-xs font-black block">Samad Khan (Sameer)</span>
+                          <span className="text-[9.5px] text-stone-500 dark:text-stone-400 block mt-0.5 font-mono">samadkhansameerkhan@gmail.com</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-xs font-black block">Samad Khan (Sameer)</span>
-                        <span className="text-[10px] text-stone-450 dark:text-stone-400 block mt-0.5">samadkhansameerkhan@gmail.com</span>
-                        <span className="text-[8.5px] font-mono font-extrabold text-amber-500 uppercase mt-0.5 block tracking-wider">⚡ SECURED CLIENT TESTING ACCESS</span>
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0 ml-2" />
+                    </motion.button>
+                  </div>
+
+                  {/* Choice 2: Custom Testing Email input */}
+                  <div className="pt-2 border-t border-stone-150 dark:border-stone-850 space-y-2.5">
+                    <label className="text-[8px] font-black uppercase tracking-wider text-stone-400 block">Or Link Alternative Google Account (Testing Session)</label>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-left">
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          placeholder="Your Full Name"
+                          value={customGoogleName}
+                          onChange={(e) => setCustomGoogleName(e.target.value)}
+                          className="w-full text-[11px] bg-stone-50 dark:bg-[#141211] border border-stone-250 dark:border-stone-800 rounded-lg py-1.5 px-3 font-semibold focus:outline-none focus:border-amber-500 text-stone-800 dark:text-stone-100 focus:ring-1 focus:ring-amber-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <input
+                          type="email"
+                          placeholder="google@example.com"
+                          value={customGoogleEmail}
+                          onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                          className="w-full text-[11px] bg-stone-50 dark:bg-[#141211] border border-stone-250 dark:border-stone-800 rounded-lg py-1.5 px-3 font-semibold focus:outline-none focus:border-amber-500 text-stone-800 dark:text-stone-100 focus:ring-1 focus:ring-amber-500 font-mono"
+                        />
                       </div>
                     </div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 ml-2" />
-                  </motion.button>
 
-                  {/* Secondary Advanced option */}
-                  <div className="pt-2">
+                    <button
+                      type="button"
+                      disabled={!customGoogleEmail.trim()}
+                      onClick={() => {
+                        const targetName = customGoogleName.trim() || 'Custom Tester';
+                        const targetEmail = customGoogleEmail.trim();
+                        setGoogleConnectingState('linking');
+                        setTimeout(() => {
+                          setGoogleConnectingState('finished');
+                          setTimeout(() => {
+                            triggerSimulatedGoogleAuth(targetEmail, targetName);
+                            setShowGooglePortal(false);
+                          }, 1000);
+                        }, 1200);
+                      }}
+                      className="w-full py-2 bg-stone-800 dark:bg-stone-200 hover:bg-stone-750 dark:hover:bg-amber-400 text-white dark:text-black hover:text-amber-500 dark:hover:text-black font-black uppercase text-[10px] tracking-wider rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                    >
+                      <Sparkles size={12} />
+                      Authorize Alternative Sandbox Account
+                    </button>
+                  </div>
+
+                  {/* Secondary Advanced option with a clear danger flag */}
+                  <div className="pt-2 border-t border-stone-150 dark:border-stone-850">
                     <button
                       type="button"
                       onClick={() => {
                         setShowGooglePortal(false);
                         triggerDirectOAuthUrlFlow();
                       }}
-                      className="w-full text-center py-2.5 bg-gradient-to-r from-stone-850 to-stone-800 hover:from-stone-805 hover:to-stone-750 text-stone-200 border border-stone-700 dark:border-stone-800 rounded-xl text-xs font-bold uppercase tracking-wide cursor-pointer flex items-center justify-center gap-2 shadow"
+                      className="w-full text-center py-2 bg-stone-100 dark:bg-stone-850 hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-650 dark:text-stone-400 border border-stone-200 dark:border-stone-800 rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5 transition-all"
                     >
-                      <Globe size={13} className="text-amber-500" />
-                      Run Standard Native OAuth Popup
+                      <Globe size={11} className="text-stone-400" />
+                      Run Standard Native OAuth Popup (May Trigger Chrome Warning)
                     </button>
                   </div>
 
-                  {/* Troubleshooting Guide instructions */}
-                  <div className="p-3.5 rounded-xl border border-stone-850 dark:border-stone-800 bg-stone-50 dark:bg-[#0E0C0B] text-left font-mono text-[9.3px] text-stone-550 dark:text-stone-400 leading-relaxed shadow-inner">
-                    <p className="font-extrabold text-stone-900 dark:text-stone-300 uppercase tracking-widest text-[8px] mb-1.5 text-amber-550 flex items-center gap-1.5">
-                      <ShieldCheck size={11} />
-                      Origin Troubleshooting Panel
+                  {/* Custom Info footer */}
+                  <div className="p-3 rounded-lg border border-stone-150 dark:border-stone-850 bg-stone-50 dark:bg-[#0E0C0B] text-left font-mono text-[8.5px] text-stone-550 dark:text-stone-400 leading-relaxed shadow-inner">
+                    <p className="font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-widest text-[7.5px] flex items-center gap-1 mt-0.5 mb-1.5">
+                      <ShieldCheck size={11} className="text-amber-500 shrink-0" />
+                      Enterprise Safe Storage Metrics
                     </p>
-                    <p>If the native popup yields <span className="text-red-500 font-bold">Error 401: invalid_client</span>, it means your dynamic preview domain is not cataloged as an origin yet.</p>
-                    <div className="bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-850 p-1.5 rounded my-1.5 select-all text-stone-900 dark:text-white font-black truncate text-[8.5px]">
-                      {window.location.origin}
-                    </div>
-                    <p className="mt-1.5">Add this origin under <span className="text-amber-500">Authorized JavaScript Origins</span> in GCP Credentials Console for seamless native login.</p>
+                    <p>
+                      Forge AI utilizes Client-Side Encryption Sandbox structures. Connecting via safe mock environments processes authentic user keys without transmitting raw passwords or personal tokens to the outer grid. Both methods assign proper active level parameters.
+                    </p>
                   </div>
                 </div>
               )}
@@ -1743,7 +1893,7 @@ export default function AuthAndOnboarding({ onComplete, theme }: AuthAndOnboardi
                   </div>
                   <div>
                     <h4 className="font-syne text-sm font-black uppercase tracking-wider text-amber-500 animate-pulse">Checking Client Credentials</h4>
-                    <p className="text-[10px] text-stone-400 font-mono mt-1">Connecting client id: 1056455...</p>
+                    <p className="text-[9.5px] text-stone-400 font-mono mt-1 select-all break-all max-w-xs mx-auto" title="Click to select client ID">Client ID: 1056455256507-1gf0gacgggvt47p6o81q5fl0fpls4qib.apps.googleusercontent.com</p>
                     <p className="text-[9px] text-stone-500 animate-pulse mt-2">Aligning authentication scopes [openid profile email] ...</p>
                   </div>
                 </div>

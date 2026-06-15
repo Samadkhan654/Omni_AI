@@ -123,6 +123,112 @@ export default function AdvancedNotes({ theme, showToast }: AdvancedNotesProps) 
   const [sortBy, setSortBy] = useState<'updated' | 'title' | 'time'>('updated');
   const [editorMode, setEditorMode] = useState<'write' | 'preview' | 'whiteboard' | 'kanban'>('write');
 
+  // Page + Platform connection mapping
+  const connectionPlatforms = [
+    { id: 'command_center', label: 'Command Center', icon: '📊' },
+    { id: 'people_hub', label: 'People Hub', icon: '👤' },
+    { id: 'conversations', label: 'Conversations', icon: '💬' },
+    { id: 'cost_guard', label: 'CostGuard', icon: '🛡️' },
+    { id: 'stock_sense', label: 'StockSense', icon: '📦' },
+    { id: 'flow_builder', label: 'Flow Builder', icon: '⚡' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' }
+  ];
+
+  const [connections, setConnections] = useState<{ [noteId: string]: string[] }>(() => {
+    const local = localStorage.getItem('omni_note_connections_v2');
+    return local ? JSON.parse(local) : {
+      'n_1': ['command_center', 'cost_guard'],
+      'n_2': ['conversations']
+    };
+  });
+
+  const toggleConnection = (pageId: string) => {
+    if (!activeNoteId) return;
+    setConnections(prev => {
+      const currentList = prev[activeNoteId] || [];
+      const isConnected = currentList.includes(pageId);
+      const updatedList = isConnected 
+        ? currentList.filter(id => id !== pageId)
+        : [...currentList, pageId];
+      const updated = { ...prev, [activeNoteId]: updatedList };
+      localStorage.setItem('omni_note_connections_v2', JSON.stringify(updated));
+      showToast(isConnected 
+        ? `🔌 Disconnected this Note from ${pageId.replace('_', ' ').toUpperCase()} successfully.` 
+        : `🔗 Connected this Note to ${pageId.replace('_', ' ').toUpperCase()}! Data anchoring is now active.`
+      );
+      return updated;
+    });
+  };
+
+  const handleGenerateAiTemplate = (type: 'sop' | 'marketing' | 'outreach' | 'polish') => {
+    let text = '';
+    if (type === 'sop') {
+      text = `# STANDARD OPERATING PROCEDURE (SOP): EXECUTIVE PROTOCOLS
+## 1. Objective and Reach
+This SOP defines the direct actions required to preserve client accounts and mitigate supply friction loops.
+
+## 2. Platform Integrations
+- Monitor supply depletion levels using StockSense.
+- Check active communication overrides in Conversations.
+- Direct all financial assessments to CostGuard.
+
+## 3. Mandatory Steps
+1. Align warehouse metrics via Flow Builder webhook.
+2. Confirm Client Health Score exceeds 75 inside People Hub.
+3. Validate overall daily token expenditure levels.
+
+## 4. Key Metrics and SLAs
+- Response Time Target: <1.5s
+- Client Retention Index: >98%`;
+      setEditingBody(text);
+      showToast("📝 Generated professional SOP Procedure checklist!");
+    } else if (type === 'marketing') {
+      text = `# HIGH-CONVERSION MARKETING COPY
+## Campaign: VIP Account Re-Engagement
+
+"Hello valued member,
+
+Our logs indicate that your account has been quiet for over 30 days. To welcome you back, we have credited a 20% discount coupon to your balance.
+
+Click your unique link below to apply your discount:
+⭐ [Apply Coupon Coupon Code]
+
+Warm regards,
+[Brand Name] Support"`;
+      setEditingBody(text);
+      showToast("🚀 Generated High-Yield Promotional Campaign copy!");
+    } else if (type === 'outreach') {
+      text = `# B2B STRATEGIC PARTNERSHIP EMAIL COLD PITCH
+Subject: Optimizing Vendor Supply Chain Efficiency — Lead Generation
+
+"Dear Lead Logistics Manager,
+
+I am writing on behalf of our team. We have analyzed multiple shipping buffers that could optimize your dispatch pipeline by 14.5% this quarter.
+
+We would love to tie our Flow Builder automations directly to your supply webhooks for real-time tracking.
+
+Are you available for a brief 10-minute overview this Thursday?
+
+Sincerely,
+[Your Name]
+Operations Director"`;
+      setEditingBody(text);
+      showToast("✉️ Generated high-response B2B Outreach proposal!");
+    } else if (type === 'polish') {
+      if (!editingBody) {
+        showToast("⚠️ Editor is currently empty. Write some text first to polish.");
+        return;
+      }
+      const polished = `## EXECUTIVE RE-DRAFT (POLISHED TONE)
+` + editingBody.split('\n').map(line => {
+        if (line.startsWith('#') || line.startsWith('!') || line.startsWith('|') || line.trim() === '') return line;
+        return `• [Certified Protocol Statement]: ${line}`;
+      }).join('\n');
+      setEditingBody(polished);
+      showToast("✨ Applied executive tone & structure polish!");
+    }
+  };
+
   // Time Tracker state
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -624,7 +730,7 @@ export default function AdvancedNotes({ theme, showToast }: AdvancedNotesProps) 
   const inputBgCls = isDark ? 'bg-[#141210] border-stone-850 text-white rounded-2xl' : 'bg-neutral-50 border-neutral-250 text-[#1C1917] rounded-xl';
 
   return (
-    <div className="space-y-4 max-h-[calc(100vh-140px)] flex flex-col overflow-hidden">
+    <div className="space-y-4 max-h-[calc(100vh-140px)] flex flex-col overflow-y-auto pr-1 pb-6 scrollbar-thin">
 
       {/* Main Header Bento Box */}
       <div className={`p-4 px-5 rounded-[24px] border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shrink-0 ${cardBgCls}`}>
@@ -748,7 +854,7 @@ export default function AdvancedNotes({ theme, showToast }: AdvancedNotesProps) 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
         
         {/* Left Column Explorer Navigation */}
-        <div className="md:col-span-4 space-y-3">
+        <div className="md:col-span-3 space-y-3">
           <div className={`p-3 rounded-xl border flex flex-col h-[500px] justify-between ${cardBgCls}`}>
             <div className="space-y-3 flex flex-col h-full overflow-hidden">
               <div className="flex justify-between items-center pb-2 border-b border-stone-850">
@@ -843,8 +949,8 @@ export default function AdvancedNotes({ theme, showToast }: AdvancedNotesProps) 
           </div>
         </div>
 
-        {/* Right Column workspace Content panel */}
-        <div className="md:col-span-8">
+        {/* Middle Column workspace Content panel */}
+        <div className={editorMode === 'kanban' ? "md:col-span-9" : "md:col-span-6"}>
           
           {/* Main workspace Kanban Board View */}
           {editorMode === 'kanban' ? (
@@ -1263,6 +1369,92 @@ export default function AdvancedNotes({ theme, showToast }: AdvancedNotesProps) 
             </div>
           )}
         </div>
+
+        {/* RIGHT COLUMN: AI Writing Assistant & Page + Platform Connections */}
+        {editorMode !== 'kanban' && (
+          <div className="md:col-span-3 flex flex-col gap-4">
+            {/* AI Writing Assistant Box */}
+            <div className={`p-4 rounded-[20px] border flex flex-col justify-between ${cardBgCls} h-[240px]`}>
+              <div className="space-y-2 flex flex-col h-full overflow-hidden select-none">
+                <div className="flex items-center gap-1 border-b border-stone-800 pb-2">
+                  <Sparkles size={11} className="text-amber-500 animate-pulse" />
+                  <span className="font-extrabold text-[10px] uppercase tracking-wider text-amber-500">AI Writing Assistant</span>
+                </div>
+                <p className="text-[10px] text-stone-400">Instantly generate structured SOP documentation drafts or target marketing outreach copies.</p>
+                
+                <div className="grid grid-cols-2 gap-2 flex-grow overflow-y-auto pt-1 scrollbar-thin">
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAiTemplate('sop')}
+                    className="p-2 bg-stone-950/60 border border-stone-850 hover:border-amber-500 rounded-xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                  >
+                    <span className="text-[9px] font-black text-amber-500">SOP CONTRACT</span>
+                    <span className="text-[8px] text-stone-550 leading-tight">Generate SOP</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAiTemplate('marketing')}
+                    className="p-2 bg-stone-950/60 border border-stone-850 hover:border-amber-500 rounded-xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                  >
+                    <span className="text-[9px] font-black text-emerald-400">RETAIN FLOW</span>
+                    <span className="text-[8px] text-stone-555 leading-tight">Promo Copy</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAiTemplate('outreach')}
+                    className="p-2 bg-stone-950/60 border border-stone-850 hover:border-amber-500 rounded-xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                  >
+                    <span className="text-[9px] font-black text-cyan-400">EMAIL OUTREACH</span>
+                    <span className="text-[8px] text-stone-555 leading-tight">Partnership Pitch</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAiTemplate('polish')}
+                    className="p-2 bg-stone-950/60 border border-stone-850 hover:border-[#F59E0B] rounded-xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                  >
+                    <span className="text-[9px] font-black text-[#F59E0B]">TONE REWRITER</span>
+                    <span className="text-[8px] text-stone-555 leading-tight">Executive Polish</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Platform Connections Box */}
+            <div className={`p-4 rounded-[20px] border flex flex-col justify-between ${cardBgCls} h-[245px]`}>
+              <div className="space-y-2 flex flex-col h-full overflow-hidden select-none">
+                <div className="flex items-center gap-1 border-b border-stone-800 pb-2">
+                  <Briefcase size={11} className="text-amber-500" />
+                  <span className="font-extrabold text-[10px] uppercase tracking-wider text-stone-200">Platform Connections</span>
+                </div>
+                <p className="text-[10px] text-stone-400">Pin or bind these documents to active platform modules for live data anchoring.</p>
+                
+                <div className="space-y-1.5 flex-grow overflow-y-auto py-1.5 scrollbar-thin pr-1">
+                  {connectionPlatforms.map(platform => {
+                    const isConnected = (connections[activeNoteId] || []).includes(platform.id);
+                    return (
+                      <button
+                        key={platform.id}
+                        type="button"
+                        onClick={() => toggleConnection(platform.id)}
+                        className={`w-full flex items-center justify-between p-1.5 rounded-xl border text-[9px] font-bold transition-all cursor-pointer ${
+                          isConnected 
+                            ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' 
+                            : 'bg-stone-950/50 border-stone-850 text-stone-400 hover:text-stone-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span>{platform.icon}</span>
+                          <span className="capitalize">{platform.label}</span>
+                        </span>
+                        <span>{isConnected ? '● Connected' : '○ Bind Hub'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

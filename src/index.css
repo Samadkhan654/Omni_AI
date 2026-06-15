@@ -36,13 +36,39 @@ body {
   color: #1C1917;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-*::-webkit-scrollbar {
+/* Custom sleek, custom-scroll scrollbars style helper */
+.custom-scroll {
+  -ms-overflow-style: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(120, 113, 108, 0.3) transparent !important;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: block !important;
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 113, 108, 0.4) !important;
+  border-radius: 9999px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(120, 113, 108, 0.6) !important;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera (default containers) */
+*:not(.custom-scroll)::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-* {
+/* Hide scrollbar for IE, Edge and Firefox (default containers) */
+*:not(.custom-scroll) {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }

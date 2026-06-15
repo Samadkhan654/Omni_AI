@@ -21,13 +21,23 @@ interface InventoryHubProps {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   theme: 'light' | 'dark';
+  isSimulatingLive: boolean;
+  setIsSimulatingLive: (val: boolean) => void;
 }
 
-export default function InventoryHub({ products, setProducts, theme }: InventoryHubProps) {
+export default function InventoryHub({ 
+  products, 
+  setProducts, 
+  theme,
+  isSimulatingLive,
+  setIsSimulatingLive
+}: InventoryHubProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [delayDays, setDelayDays] = useState(14);
   const [showStressTest, setShowStressTest] = useState(false);
   const [restockAmount, setRestockAmount] = useState(300);
+  const [isCashAwareActive, setIsCashAwareActive] = useState(true);
+  const [freeCashReserves, setFreeCashReserves] = useState(4200);
 
   // Copilot messages
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'owner' | 'aria'; text: string }>>([
@@ -100,6 +110,28 @@ export default function InventoryHub({ products, setProducts, theme }: Inventory
           <Layers size={14} /> {showStressTest ? "Hide Supply Stress Test" : "Run Supply Delay Stress Test"}
         </button>
       </div>
+
+      {!isSimulatingLive ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center rounded-[28px] border border-dashed border-amber-500/25 bg-stone-900/10 font-sans select-none max-w-xl mx-auto my-12 w-full">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5 shadow-inner">
+            <PackageSearch size={30} className="animate-pulse" />
+          </div>
+          <h3 className="text-base font-black uppercase text-stone-100 tracking-wider">StockSense Offline</h3>
+          <p className="text-xs text-stone-400 mt-2 leading-relaxed max-w-sm">
+            Cash-aware inventory optimization, supplier risk calculators, and real-time stocking thresholds are currently offline. Establish your active stream connection to populate product records reactively.
+          </p>
+          <button
+            onClick={() => {
+              setIsSimulatingLive(true);
+              localStorage.setItem('omni_dashboard_simulating', 'true');
+            }}
+            className="mt-6 px-6 py-3 bg-amber-500 hover:bg-amber-450 text-black text-[10.5px] font-black uppercase tracking-widest rounded-xl cursor-pointer transition-all shadow-lg active:scale-97 animate-pulse"
+          >
+            🔌 Link Live Channels
+          </button>
+        </div>
+      ) : (
+        <>
 
       {/* Stress Test Dashboard Panel */}
       <AnimatePresence>
@@ -341,7 +373,32 @@ export default function InventoryHub({ products, setProducts, theme }: Inventory
                 </button>
               </div>
 
-              <div className="space-y-4 mb-8">
+              <div className="space-y-4 mb-6">
+                
+                {/* Cash-Aware Guardrail controls */}
+                <div className={`p-4 rounded-2xl border ${isDark ? 'bg-stone-950 border-stone-850' : 'bg-stone-50 border-stone-200'} space-y-3`}>
+                  <div className="flex justify-between items-center">
+                    <div className="text-left">
+                      <span className="text-[9px] font-mono font-black uppercase text-amber-500 block">Cash-Aware Guardrails</span>
+                      <h4 className="text-xs font-bold text-white uppercase font-sans">Enforce Cash Ceiling</h4>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer select-none">
+                      <input 
+                        type="checkbox"
+                        checked={isCashAwareActive}
+                        onChange={(e) => setIsCashAwareActive(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-stone-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-black peer-checked:after:bg-black after:border-stone-600 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-2 border-t border-dashed border-stone-850">
+                    <span className="text-stone-400">Available Safe Cash Bankroll:</span>
+                    <span className="font-mono font-extrabold text-emerald-400">${freeCashReserves.toLocaleString()} USD</span>
+                  </div>
+                </div>
+
                 <div className={`p-4 rounded-2xl border ${
                   isDark ? 'bg-stone-950 border-stone-850' : 'bg-neutral-50 border-neutral-200'
                 }`}>
@@ -360,6 +417,18 @@ export default function InventoryHub({ products, setProducts, theme }: Inventory
                   />
                   <p className="text-[10px] text-neutral-400 mt-2">Modeling shows {restockAmount} units provides approximately 60-day operational coverage.</p>
                 </div>
+
+                {/* Cash Threshold Warning Block */}
+                {isCashAwareActive && (restockAmount * 6 > freeCashReserves) && (
+                  <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-left space-y-1 animate-pulse">
+                    <div className="flex items-center gap-1.5 text-red-400 font-extrabold text-[10.5px] uppercase tracking-wider font-mono">
+                      <AlertTriangle size={12} /> Guardrail: Capital Overflow Alert
+                    </div>
+                    <p className="text-[10px] text-stone-200">
+                      Proposed purchase of <span className="font-bold">${(restockAmount * 6).toLocaleString()}</span> exceeded available safe reserves of <span className="font-bold text-red-300">${freeCashReserves.toLocaleString()}</span> by <span className="font-black font-mono text-red-300">${((restockAmount * 6) - freeCashReserves).toLocaleString()}</span>. Reorder lock engaged.
+                    </p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className={`p-4 rounded-2xl border ${
@@ -391,8 +460,13 @@ export default function InventoryHub({ products, setProducts, theme }: Inventory
                   Cancel Order
                 </button>
                 <button 
+                  disabled={isCashAwareActive && (restockAmount * 6 > freeCashReserves)}
                   onClick={executeRestock}
-                  className="flex-1 py-3.5 bg-amber-500 hover:bg-amber-450 text-black font-black uppercase tracking-wider rounded-2xl"
+                  className={`flex-1 py-3.5 text-black font-black uppercase tracking-wider rounded-2xl transition-all ${
+                    isCashAwareActive && (restockAmount * 6 > freeCashReserves)
+                      ? 'bg-stone-800 text-stone-500 border border-stone-850 cursor-not-allowed'
+                      : 'bg-amber-500 hover:bg-amber-450 hover:scale-101 cursor-pointer'
+                  }`}
                 >
                   Approve Restock Plan
                 </button>
@@ -401,6 +475,8 @@ export default function InventoryHub({ products, setProducts, theme }: Inventory
           </div>
         )}
       </AnimatePresence>
+      </>
+      )}
 
     </div>
   );

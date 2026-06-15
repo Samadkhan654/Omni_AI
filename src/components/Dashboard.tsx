@@ -20,16 +20,13 @@ import {
   VolumeX,
   Clock,
   ShieldCheck,
-  ZapOff,
   Instagram,
-  Twitter,
-  Facebook,
   Mail,
   MessageCircle,
   Coins,
   CreditCard,
-  Database,
-  ArrowRightLeft
+  Plus,
+  Sliders
 } from 'lucide-react';
 import { Customer, ProfitLeak, Product } from '../types';
 
@@ -53,6 +50,8 @@ interface DashboardProps {
   ariaTone?: string;
   ariaAvatar?: string;
   seedStarterData?: () => void;
+  isSimulatingLive: boolean;
+  setIsSimulatingLive: (val: boolean) => void;
 }
 
 export default function Dashboard({
@@ -68,10 +67,10 @@ export default function Dashboard({
   ariaName = "Aria AI",
   ariaTone = "Helpful & Professional",
   ariaAvatar = "🤖",
-  seedStarterData
+  seedStarterData,
+  isSimulatingLive,
+  setIsSimulatingLive
 }: DashboardProps) {
-  
-  // TOKENS STATE - Platform takes tokens per duration, requires payment when drained
   const [tokens, setTokens] = useState<number>(() => {
     const saved = localStorage.getItem('cognitive_tokens');
     return saved ? parseInt(saved, 10) : 3420;
@@ -80,15 +79,88 @@ export default function Dashboard({
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [refillTier, setRefillTier] = useState<'micro' | 'mega' | 'infinite'>('mega');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [speechEnabled, setSpeechEnabled] = useState(false);
+  const [customQuestion, setCustomQuestion] = useState("");
+  const [ariaMode, setAriaMode] = useState<'idle' | 'speaking' | 'thinking'>('speaking');
 
-  useEffect(() => {
-    localStorage.setItem('cognitive_tokens', tokens.toString());
-  }, [tokens]);
+  const [liveHealth, setLiveHealth] = useState(isSimulatingLive ? 74 : 0);
+  const [liveMargin, setLiveMargin] = useState(isSimulatingLive ? 34 : 0);
+  const [liveOpportunities, setLiveOpportunities] = useState(isSimulatingLive ? 3200 : 0);
+  const [liveConversations, setLiveConversations] = useState(isSimulatingLive ? 47 : 0);
+  const [liveResolved, setLiveResolved] = useState(isSimulatingLive ? 41 : 0);
+  const [liveEscalated, setLiveEscalated] = useState(isSimulatingLive ? 6 : 0);
 
-  // Real-time automatic data ticking simulator (Active Command Center Simulation)
+  const [ariaSpeech, setAriaSpeech] = useState<string>(
+    isSimulatingLive
+      ? `Good morning, ${profile.ownerName || 'Operator'}. Your overall Business Health Score stands at 74/100, up five points. I have highlighted three critical actions in your Daily Brief that can protect $420 in margin today.`
+      : `Hello, ${profile.ownerName || 'Operator'}. Unified business telemetry trackers are currently unlinked. Connect your active channels below to align real-time metrics instantly.`
+  );
+
+  // Activity feed is fully localized in plain human English
+  const [activityLogs, setActivityLogs] = useState<Array<{ id: string; msg: string; time: string; type: 'reply' | 'stock' | 'cost' }>>(() => {
+    if (isSimulatingLive) {
+      return [
+        { id: 'log-1', msg: 'Aria auto-replied to James on WhatsApp: "Order confirmation received, dispatching in 4 hours."', time: '2:15 PM', type: 'reply' },
+        { id: 'log-2', msg: 'Stock alert sent: "iPhone accessories" are running low. Tap Restock to draft supplier order.', time: '1:12 PM', type: 'stock' },
+        { id: 'log-3', msg: 'Cost spike flagged: Adobe creative subscription price climbed by +34%. Consider canceling.', time: '11:05 AM', type: 'cost' },
+        { id: 'log-4', msg: 'Core Win-back sequence approved for Maria Santos (@wanderlust_shop).', time: '9:40 AM', type: 'reply' }
+      ];
+    }
+    return [];
+  });
+
+  const startLiveSimulation = () => {
+    setIsSimulatingLive(true);
+    localStorage.setItem('omni_dashboard_simulating', 'true');
+    showToast("📡 Connecting real-time telemetry adapters...");
+
+    let currentH = 0;
+    let currentM = 0;
+    let currentO = 0;
+    let currentC = 0;
+    let currentR = 0;
+    let currentE = 0;
+
+    const timer = setInterval(() => {
+      let done = true;
+      if (currentH < 74) { currentH += 2; if (currentH > 74) currentH = 74; setLiveHealth(currentH); done = false; }
+      if (currentM < 34) { currentM += 1; if (currentM > 34) currentM = 34; setLiveMargin(currentM); done = false; }
+      if (currentO < 3200) { currentO += 160; if (currentO > 3200) currentO = 3200; setLiveOpportunities(currentO); done = false; }
+      if (currentC < 47) { currentC += 2; if (currentC > 47) currentC = 47; setLiveConversations(currentC); done = false; }
+      if (currentR < 41) { currentR += 2; if (currentR > 41) currentR = 41; setLiveResolved(currentR); done = false; }
+      if (currentE < 6) { currentE += 1; if (currentE > 6) currentE = 6; setLiveEscalated(currentE); done = false; }
+
+      if (done) {
+        clearInterval(timer);
+        setAriaSpeech(`Good morning, ${profile.ownerName || 'Operator'}. Your overall Business Health Score stands at 74/100, up five points. I have highlighted three critical actions in your Daily Brief that can protect $420 in margin today.`);
+        setActivityLogs([
+          { id: 'log-1', msg: 'Aria auto-replied to James on WhatsApp: "Order confirmation received, dispatching in 4 hours."', time: '2:15 PM', type: 'reply' },
+          { id: 'log-2', msg: 'Stock alert sent: "iPhone accessories" are running low. Tap Restock to draft supplier order.', time: '1:12 PM', type: 'stock' },
+          { id: 'log-3', msg: 'Cost spike flagged: Adobe creative subscription price climbed by +34%. Consider canceling.', time: '11:05 AM', type: 'cost' },
+          { id: 'log-4', msg: 'Core Win-back sequence approved for Maria Santos (@wanderlust_shop).', time: '9:40 AM', type: 'reply' }
+        ]);
+        showToast("🚀 All telemetry nodes synced live successfully!");
+      }
+    }, 40);
+  };
+
+  // Derived values from states
+  const highRiskCustomers = customers.filter(c => c.riskLevel === 'HIGH' && c.status === 'pending');
+  const currentRiskSum = isSimulatingLive 
+    ? (highRiskCustomers.length > 0 ? highRiskCustomers.reduce((sum, c) => sum + c.revenue, 0) : 2340)
+    : 0;
+
+  const activeLeaksCount = isSimulatingLive ? leaks.filter(l => !l.resolved).length : 0;
+  // Let's compute profit health
+  const profitMarginPercent = isSimulatingLive ? liveMargin : 0;
+
+  const opportunitiesCount = isSimulatingLive ? (customers.filter(c => c.status === 'pending').length || 8) : 0;
+  const currentOpportunitiesSum = isSimulatingLive ? liveOpportunities : 0;
+
+  // Background active simulator
   useEffect(() => {
-    const backgroundSimInterval = setInterval(() => {
-      // 1. Tick down tokens slightly representing automatic ongoing ARIA background scans (-1 token every 12 seconds)
+    const interval = setInterval(() => {
+      // Small background simulation
       setTokens(prev => {
         if (prev > 10) {
           const nextVal = prev - 1;
@@ -98,639 +170,630 @@ export default function Dashboard({
         return prev;
       });
 
-      // 2. Chance of generating a live system telemetry notification alert
-      if (Math.random() < 0.28) {
-        const simActivities = [
-          { msg: 'Aria scanned checkout reserves: All supply thresholds safe.', type: 'reply' as const },
-          { msg: 'Automatic sync triggered inside CostGuard CFO index ledger.', type: 'cost' as const },
-          { msg: 'Incoming WhatsApp query queued from Sarah Miller regarding reorders.', type: 'reply' as const },
-          { msg: 'Live diagnostic audit completed on B2B wholesale coffee logs.', type: 'stock' as const },
-          { msg: 'Aria prevented low reserve stockout on Silicone cases.', type: 'stock' as const },
-          { msg: 'Security firewall verified: Encrypted SSL SIP lines stable.', type: 'cost' as const }
+      if (isSimulatingLive && Math.random() < 0.2) {
+        const events = [
+          { msg: `Aria solved custom inquiry for Sarah Vance instantly on WhatsApp.`, type: 'reply' as const },
+          { msg: `Stock level checked for B2B accounts. Restock draft primed for verification.`, type: 'stock' as const },
+          { msg: `CostGuard identified silent duplicate SaaS invoice. Auto-disputed.`, type: 'cost' as const }
         ];
-        
-        const randomFeed = simActivities[Math.floor(Math.random() * simActivities.length)];
-        const curTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
+        const randomEvt = events[Math.floor(Math.random() * events.length)];
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         setActivityLogs(prev => [
-          {
-            id: `sim_log_${Date.now()}`,
-            msg: randomFeed.msg,
-            time: curTime,
-            type: randomFeed.type
-          },
-          ...prev.slice(0, 7) // keep it tidy
+          { id: `sim-log-${Date.now()}`, msg: randomEvt.msg, time: timeStr, type: randomEvt.type },
+          ...prev.slice(0, 5)
         ]);
 
-        showToast(`⚡ Telemetry: ${randomFeed.msg}`);
+        // increment counts slightly to show live changes
+        setLiveConversations(c => c + 1);
+        setLiveResolved(r => r + 1);
       }
-    }, 15000); // Check every 15 seconds to simulate an active, humming enterprise cloud engine!
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isSimulatingLive]);
 
-    return () => clearInterval(backgroundSimInterval);
-  }, []);
-
-  // Toast / Notifications State
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 3000);
   };
 
-  // Aria Speaking State
-  const [ariaSpeech, setAriaSpeech] = useState<string>(
-    `Operational alert, ${profile.ownerName || 'Operator'}. Our real-time audits suggest $2,340 is currently at risk across VIP channels, but we have identified $3,100 in high-probability opportunities.`
-  );
-  const [ariaMode, setAriaMode] = useState<'idle' | 'speaking' | 'thinking'>('speaking');
-  const [speechEnabled, setSpeechEnabled] = useState(false);
-  const [customQuestion, setCustomQuestion] = useState("");
-
-  // Activity Feed Logging State
-  const [activityLogs, setActivityLogs] = useState<Array<{ id: string; msg: string; time: string; type: 'reply' | 'stock' | 'cost' }>>([
-    { id: 'log-1', msg: 'Aria replied to James on WhatsApp: "Want 5 kits..."', time: '2:15 PM', type: 'reply' },
-    { id: 'log-2', msg: 'Stock warning threshold triggered: "iPhone cases" low', time: '1:12 PM', type: 'stock' },
-    { id: 'log-3', msg: 'Cost expansion flag: Electricity invoice variance +34%', time: '11:05 AM', type: 'cost' },
-    { id: 'log-4', msg: 'Core Win-back sequence approved for @wanderlust_shop', time: '9:40 AM', type: 'reply' }
-  ]);
-
-  // Derived core variables
-  const highRiskCustomersCount = customers.filter(c => c.riskLevel === 'HIGH' && c.status === 'pending').length;
-  const currentRiskSum = customers.filter(c => c.riskLevel === 'HIGH' && c.status === 'pending').reduce((sum, c) => sum + c.revenue, 0) || 2340;
-  const resolvedCount = customers.filter(c => c.status === 'executed').length;
-
-  const activeLeaksCount = leaks.filter(l => !l.resolved).length;
-  const currentProfitValue = 4820 + (leaks.filter(l => l.resolved).length * 150);
-  
-  const opportunitiesCount = customers.filter(c => c.status === 'pending').length || 10;
-  const currentOpportunitiesSum = 3100 - (resolvedCount * 250);
-
-  // Audio Reading
-  const speakText = (text: string) => {
-    if (!speechEnabled) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onstart = () => setAriaMode('speaking');
-      utterance.onend = () => setAriaMode('idle');
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.warn("Speech API is blocked or unavailable.", e);
-    }
-  };
-
-  // Interact with custom query
-  const handleAriaInteraction = (val: string) => {
-    if (!val.trim()) return;
-    
-    // Deduct tokens
+  const handleQueryAria = (q: string) => {
+    if (!q.trim()) return;
     if (tokens < 45) {
       showToast("⚠️ Out of Cognitive Tokens! Please refill your Token Tank first.");
       setShowTokenModal(true);
       return;
     }
-    
     setTokens(prev => Math.max(0, prev - 45));
     setAriaMode('thinking');
-    
     setTimeout(() => {
-      let resolvedSpeech = "";
-      const query = val.toLowerCase();
-      
-      if (query.includes("leak") || query.includes("profit") || query.includes("cost")) {
-        resolvedSpeech = `Inspect costguard logs! We detected ${activeLeaksCount} leaks costed out. Plucking third-party software subscriptions immediately safeguards $${activeLeaksCount * 140}/month.`;
-      } else if (query.includes("retention") || query.includes("risk") || query.includes("unpaid")) {
-        resolvedSpeech = `Aria RetainFlow update: ${highRiskCustomersCount} high risk VIP accounts were located. Distributing our loyalty auto-coupons locks in the $${currentRiskSum} annual run rate.`;
-      } else if (query.includes("stock") || query.includes("supply") || query.includes("reorder")) {
-        resolvedSpeech = `Our critical stocking lines are currently monitored. iPhone accessories require a standard restock sequence of 200 units to bypass high shipping overheads.`;
+      let speech = "";
+      const cleaned = q.toLowerCase();
+      if (cleaned.includes("risk") || cleaned.includes("loyalty") || cleaned.includes("customer")) {
+        speech = `I evaluated high-risk VIP logs. We have ${highRiskCustomers.length || 3} silent customers with a total value of $${currentRiskSum}. Deploying the personalized automatic coupon campaign immediately blocks this leak.`;
+      } else if (cleaned.includes("profit") || cleaned.includes("leak") || cleaned.includes("negotiat")) {
+        speech = `CostGuard report: Detected silent duplicate software charging. Canceling idle team subscriptions immediately recovers our Net Margin to 35.2%.`;
+      } else if (cleaned.includes("stock") || cleaned.includes("restock") || cleaned.includes("supply")) {
+        speech = `StockSense warning: iPhone accessory stocks have reached critical threshold. Lead time is 14 days, reordering 300 units next Tuesday keeps our supply chain uninterrupted.`;
       } else {
-        resolvedSpeech = `I have completed a holistic analysis on your operations database. Our aggregate health score sits solid. Leverage active token reserves to audit downstream streams.`;
+        speech = `I have run a holistic audit regarding your integrations, stock profiles, and communication queues. Everything is in order. Let me know which exact priority I should execute first.`;
       }
-
-      setAriaSpeech(resolvedSpeech);
+      setAriaSpeech(speech);
       setAriaMode('speaking');
-      speakText(resolvedSpeech);
-      
-      // Append activity log
-      const newLog = {
-        id: `log-${Date.now()}`,
-        msg: `Aria processed telemetry query: "${val}"`,
-        time: 'Just now',
-        type: 'reply' as const
-      };
-      setActivityLogs(prev => [newLog, ...prev]);
-    }, 1100);
+      if (speechEnabled) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(speech));
+      }
+      setActivityLogs(prev => [
+        { id: `log-${Date.now()}`, msg: `Aria processed direct command: "${q}"`, time: 'Just now', type: 'reply' },
+        ...prev
+      ]);
+    }, 1000);
   };
 
-  // Launch automatic win back recovery on at risk customers
-  const handleRecoverAtRisk = () => {
+  const handleBulkWinback = () => {
     if (tokens < 120) {
-      showToast("⚠️ Critical Refill Required: Launching win-back engine requires 120 tokens.");
+      showToast("⚠️ Launching bulk Winback campaign requires 120 system tokens.");
       setShowTokenModal(true);
       return;
     }
-
     setTokens(prev => Math.max(0, prev - 120));
     setCustomers(prev => prev.map(c => c.riskLevel === 'HIGH' ? { ...c, status: 'executed' } : c));
-    showToast("🚀 Win-Back Sequence Authorized! Aria distributed bulk auto-discounts across 3 high-risk channels!");
-    
-    setAriaSpeech("Dispatched personalized re-engagements successfully. Silent customer counts saved. Risk exposure cleared.");
-    speakText("Dispatched personalized re-engagements successfully.");
-
+    showToast("🚀 Automated Winback Dispatched to silent VIP customers!");
+    setAriaSpeech("Campaign launched. Dispatched personalized invitations and vouchers across 3 silent accounts. Churn risk reduced.");
     setActivityLogs(prev => [
-      { id: `log-act-${Date.now()}`, msg: 'Win-back campaigns mass-broadcasted successfully', time: 'Just now', type: 'reply' },
+      { id: `win-${Date.now()}`, msg: 'Automated Win-back campaigns dispatched to 3 silent customers', time: 'Just now', type: 'reply' },
       ...prev
     ]);
   };
 
-  const handleRefillPremiumTokens = () => {
-    setIsProcessingPayment(true);
-    setTimeout(() => {
-      let added = 2000;
-      if (refillTier === 'micro') added = 1000;
-      if (refillTier === 'mega') added = 2500;
-      if (refillTier === 'infinite') added = 5000;
-
-      setTokens(prev => Math.min(maxTokens, prev + added));
-      setIsProcessingPayment(false);
-      setShowTokenModal(false);
-      showToast(`⚡ payment Successful! Charged card. Refilled ${added} Cognitive Tokens into your active tank!`);
-    }, 1800);
-  };
-
   const isDark = theme === 'dark';
-  const cardBgCls = isDark ? 'bg-stone-900 border-stone-800 text-white shadow-xl' : 'bg-white border-stone-200 text-[#1C1917] shadow-sm';
-  const textTitleCls = isDark ? 'text-white' : 'text-stone-900';
-  const textBodyCls = isDark ? 'text-stone-200' : 'text-stone-700';
-  const textMutedCls = isDark ? 'text-[#E7E5E4] font-medium' : 'text-neutral-500';
-  const borderLineCls = isDark ? 'border-stone-800' : 'border-stone-100';
+  const cardBgStyle = isDark ? 'bg-[#181614] border-stone-800/80 text-white' : 'bg-white border-stone-200 text-stone-900';
 
   return (
-    <div className="space-y-4 max-h-[calc(100vh-140px)] flex flex-col overflow-hidden">
+    <div className="space-y-4 max-h-[calc(100vh-140px)] flex flex-col overflow-y-auto pr-1 pb-6 scrollbar-thin">
       
-      {/* Toast Alert Banner */}
+      {/* Toast Alert Popup */}
       <AnimatePresence>
         {toast && (
           <motion.div 
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="fixed top-24 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-mono text-[10.5px] font-black uppercase tracking-wider border bg-black border-amber-500/50 text-amber-400 select-none"
+            className="fixed top-24 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-mono text-xs font-black uppercase tracking-wider border bg-[#141210] border-amber-500/50 text-amber-400 select-none"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-[#32CD32] animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>{toast}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Greet Header & Charging Token Indicator */}
-      <div className={`p-4 px-5 rounded-[24px] border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shrink-0 ${cardBgCls}`}>
-        <div>
-          <div className="flex items-center gap-1.5 mb-1 bg-transparent">
-            <span className="text-[9.5px] font-black uppercase bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded-md border border-amber-500/20 tracking-wider font-mono">
-              {ariaName} Workspace Active Model
-            </span>
+      {/* Real-time Telemetry WebSocket & Server-Sent Events Header Control */}
+      <div className={`p-4 px-5 rounded-[22px] border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${
+        isSimulatingLive 
+          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-sans' 
+          : 'bg-amber-500/10 border-amber-500/20 text-amber-500 font-sans'
+      }`}>
+        <div className="space-y-1 text-left">
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${isSimulatingLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-bounce'}`} />
+            <h3 className="font-extrabold text-xs uppercase tracking-widest font-mono">
+              {isSimulatingLive ? '📡 Real-Time Telemetry: Connected via WebSockets & SSE' : '⚠️ Telemetry Offline: Boards Empty'}
+            </h3>
           </div>
-          <h2 className="text-lg font-black tracking-tight leading-none text-white select-none">
-            Welcome Back, <span className="text-amber-500 font-extrabold">{profile.ownerName || 'Operator'}</span>
-          </h2>
-          <p className="text-[10.5px] text-stone-200 mt-0.5">
-            Holistic Command Center analysis on <span className="font-semibold text-amber-500">{profile.storeName || 'Wholesale Group'}</span>. Actionable directives synchronized.
+          <p className="text-[11px] text-stone-300 leading-normal max-w-2xl font-sans font-medium">
+            {isSimulatingLive 
+              ? 'Active WebSockets & Server-Sent Events are streaming raw store queues, live client transactions, and cost-saving opportunities live.' 
+              : 'Bento cards start completely empty to simulate fresh setup. Initialize our real-time simulated client-side WebSocket/SSE pump to begin raw ingestion of channel telemetry.'}
           </p>
         </div>
 
-        {/* COGNITIVE TOKEN ACTIVE METER AND CHARGING TANK */}
-        <div className="flex items-center gap-3 bg-[#171513] border border-stone-800 p-2.5 rounded-2xl select-none max-w-full">
-          <div className="text-left">
-            <span className="text-[8px] font-extrabold uppercase text-stone-200 tracking-widest font-mono block">Cognitive Token Reserves</span>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[12px] font-mono font-black text-amber-500">{tokens.toLocaleString()}</span>
-              <span className="text-[8.5px] text-stone-400 font-semibold">/ {maxTokens} tokens remaining</span>
-            </div>
-            
-            {/* Battery Charging Tank Progress wrapper */}
-            <div className="w-[140px] bg-stone-800 h-1.5 rounded-full overflow-hidden mt-1 bg-neutral-800 border border-stone-900">
-              <div 
-                className={`h-full transition-all duration-500 rounded-full ${
-                  tokens < 1000 ? 'bg-red-500' : tokens < 2500 ? 'bg-amber-500' : 'bg-emerald-400'
-                }`}
-                style={{ width: `${(tokens / maxTokens) * 100}%` }}
-              />
+        {!isSimulatingLive ? (
+          <button
+            onClick={startLiveSimulation}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-450 text-black text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer transition-all duration-150 active:scale-95 shadow-lg shadow-amber-500/10 self-stretch md:self-auto text-center"
+          >
+            🔌 Connect live SSE
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setIsSimulatingLive(false);
+              localStorage.setItem('omni_dashboard_simulating', 'false');
+              setLiveHealth(0);
+              setLiveMargin(0);
+              setLiveOpportunities(0);
+              setLiveConversations(0);
+              setLiveResolved(0);
+              setLiveEscalated(0);
+              setActivityLogs([]);
+              setAriaSpeech(`Hello, ${profile.ownerName || 'Operator'}. Unified business telemetry trackers are currently unlinked. Connect your active channels below to align real-time metrics instantly.`);
+              showToast("🔌 Telemetry stream paused.");
+            }}
+            className="px-4 py-2 bg-stone-900 hover:bg-stone-850/80 border border-stone-800 text-stone-300 hover:text-red-400 text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer transition-all self-stretch md:self-auto text-center font-mono"
+          >
+            Disconnect Stream
+          </button>
+        )}
+      </div>
+
+      {/* Trial Notice Banner */}
+      <div className="py-2.5 px-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-stone-200">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          <p className="text-xs font-bold uppercase tracking-wider text-amber-500">Premium Operations Trial ACTIVE</p>
+          <span className="text-[10px] text-stone-300">• 12 days left for payment</span>
+        </div>
+        <button 
+          onClick={() => onTabChange('pricing')}
+          className="text-[10px] bg-amber-500 text-black px-3 py-1 font-black uppercase tracking-wider rounded-lg hover:bg-amber-400 transition-all cursor-pointer"
+        >
+          View Plans & Save 20%
+        </button>
+      </div>
+
+      {/* Hero Header Area: Business Health Score + Daily Brief */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        {/* Business Health Score */}
+        <div className={`lg:col-span-4 p-5 rounded-[24px] border flex flex-col justify-between items-center text-center ${cardBgStyle}`}>
+          <div className="w-full text-left">
+            <span className="text-[9px] font-mono font-black text-amber-500 uppercase tracking-widest block mb-1">AGGREGATE HEALTH METRIC</span>
+            <h3 className="text-sm font-black uppercase tracking-wide">Business Health</h3>
+          </div>
+
+          <div className="my-4 relative flex items-center justify-center">
+            {/* Health Score Circular ring visual */}
+            <div className={`w-32 h-32 rounded-full border-[10px] flex flex-col items-center justify-center relative ${
+              isSimulatingLive ? 'border-emerald-500/20' : 'border-stone-850/20'
+            }`}>
+              {isSimulatingLive && (
+                <div className="absolute inset-0 rounded-full border-[10px] border-emerald-500 border-t-transparent border-r-transparent animate-spin animate-duration-10000 opacity-20"></div>
+              )}
+              <span className={`text-4xl font-mono font-black ${isSimulatingLive ? 'text-emerald-500 animate-pulse' : 'text-stone-500'}`}>
+                {isSimulatingLive ? liveHealth : '--'}
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#A3A3A3]">Score / 100</span>
             </div>
           </div>
 
-          <button
-            onClick={() => setShowTokenModal(true)}
-            className="px-3 py-1.5 bg-gradient-to-tr from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-[9px] font-black tracking-wider uppercase rounded-xl transition-all shadow-md shrink-0 flex items-center gap-1 cursor-pointer"
-          >
-            <Zap size={10} className="fill-black animate-pulse" />
-            <span>Refill Tank</span>
-          </button>
+          <div className="w-full flex justify-between items-center border-t border-stone-800/60 pt-3 select-none">
+            <span className="text-[11px] font-bold text-stone-300 flex items-center gap-1">
+              {isSimulatingLive ? (
+                <>
+                  <span className="text-emerald-500">↑</span> +5 from yesterday
+                </>
+              ) : (
+                <span className="text-stone-550">Telemetry disconnected</span>
+              )}
+            </span>
+            <span className={`text-[8.5px] font-black font-mono uppercase px-2 py-0.5 rounded-lg ${
+              isSimulatingLive 
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                : 'bg-stone-900 border border-stone-850 text-stone-400'
+            }`}>
+              {isSimulatingLive ? 'OPTIMAL CONDITION' : 'STANDBY'}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* THREE BENTO CARDS TOP ROW (Fluid high contrast bento) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 shrink-0">
-        
-        {/* BENTO 1: REVENUE AT RISK (Red pulsing border) */}
-        <div className={`p-4 rounded-[22px] border relative overflow-hidden transition-all flex flex-col justify-between hover:scale-[1.01] ${cardBgCls} border-red-500/40 shadow-lg`}>
-          <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+        {/* Daily Brief from Aria */}
+        <div className={`lg:col-span-8 p-5 rounded-[24px] border flex flex-col justify-between ${cardBgStyle}`}>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[9px] font-black uppercase text-red-400 tracking-wider font-mono">Revenue At Risk</span>
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              <div className="flex items-center gap-2">
+                <Sparkles size={14} className="text-amber-500 animate-pulse" />
+                <span className="text-[9px] font-mono font-black text-amber-500 uppercase tracking-widest block">DAILY EXECUTIVE INTELLIGENCE SUMMARY</span>
+              </div>
+              <span className="text-[10px] font-bold text-stone-300">Generated 2h ago</span>
             </div>
-            <div className="flex items-baseline gap-1 bg-transparent">
-              <h3 className="text-xl font-mono font-black text-white">${currentRiskSum.toLocaleString()}</h3>
-              <span className="text-[9px] text-red-400 font-semibold tracking-wide">at risk right now</span>
-            </div>
+            <h3 className="text-md font-black uppercase tracking-wide text-white mb-2">Aria's Selected Directives</h3>
+            <p className="text-xs text-stone-300 leading-relaxed font-medium mb-4">
+              "Good morning, operator. Our real-time background sweeps completed successfully. I have isolated 3 primary leak sectors to secure today:"
+            </p>
 
-            <div className="space-y-1.5 mt-3 pt-3 border-t border-stone-800/80">
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-red-500">→</span> <strong>3</strong> VIP customers silent: <span className="font-mono text-red-400 font-black">$1,200</span>
-              </p>
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-red-500">→</span> <strong>2</strong> stockouts this cycle: <span className="font-mono text-red-400 font-black">$840</span>
-              </p>
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-red-500">→</span> <strong>1</strong> unpaid SLA invoice: <span className="font-mono text-red-400 font-black">$300</span>
-              </p>
+            {/* List of 3 actionable items */}
+            <div className="space-y-2 select-text">
+              <div className="p-2.5 rounded-xl bg-black/40 border border-stone-800/80 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-stone-200">
+                  <span className="text-red-400 font-black">1.</span>
+                  <p className="font-semibold"><strong className="text-white">Revenue Exposure:</strong> 3 VIP accounts have gone silent this week.</p>
+                </div>
+                <button 
+                  onClick={handleBulkWinback}
+                  className="px-2.5 py-1 text-[9px] bg-red-500 hover:bg-red-400 text-white font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-md"
+                >
+                  Win-Back
+                </button>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-black/40 border border-stone-800/80 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-stone-200">
+                  <span className="text-amber-400 font-black">2.</span>
+                  <p className="font-semibold"><strong className="text-white">Supply Lag:</strong> iPhone accessories reached reorder triggers.</p>
+                </div>
+                <button 
+                  onClick={() => { onTabChange('stocksense'); showToast("📦 Routed to Restock advisor"); }}
+                  className="px-2.5 py-1 text-[9px] bg-amber-500 hover:bg-amber-450 text-black font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-md"
+                >
+                  Restock
+                </button>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-black/40 border border-stone-800/80 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-stone-200">
+                  <span className="text-emerald-400 font-black">3.</span>
+                  <p className="font-semibold"><strong className="text-white">Margin Leak:</strong> Unused team subscriptions auto-highlighted.</p>
+                </div>
+                <button 
+                  onClick={() => { onTabChange('costguard'); showToast("💼 Routed to cost leakage inspector"); }}
+                  className="px-2.5 py-1 text-[9px] bg-emerald-500 hover:bg-emerald-450 text-white font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-md"
+                >
+                  Plug Leaks
+                </button>
+              </div>
             </div>
           </div>
 
+          <div className="border-t border-stone-800/50 pt-3 flex justify-between items-center text-[10px] text-stone-400 font-mono mt-3 select-none">
+            <span className="flex items-center gap-1.5 font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Aria Sync Node Checked & Online
+            </span>
+            <span className="text-stone-300">Reserves: {tokens} tokens remaining</span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ROW 1 BENTOS: Revenue at Risk, Profit Health, Open Opportunities */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        
+        {/* Bento 1: Revenue at Risk */}
+        <div className={`p-5 rounded-[24px] border relative overflow-hidden flex flex-col justify-between hover:scale-[1.01] transition-transform duration-200 ${cardBgStyle} border-red-500/40 shadow-stone-900/40 shadow-lg`}>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+          <div>
+            <div className="flex justify-between items-center mb-1 bg-transparent select-none">
+              <span className="text-[9px] font-mono font-black uppercase text-red-400 tracking-wider">REVENUE AT RISK</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+            </div>
+            
+            <div className="flex items-baseline gap-1 bg-transparent mb-1">
+              <h3 className="text-2xl font-mono font-black text-white">${currentRiskSum.toLocaleString()}</h3>
+              <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">churn high risk</span>
+            </div>
+
+            <p className="text-[10.5px] text-stone-300 font-mono mb-4 border-b border-stone-800/60 pb-2 bg-transparent select-text">
+              Active exposures:
+              {isSimulatingLive ? (
+                <>
+                  <span className="text-red-400 block mt-1">• Carlos Santos (VIP) - Silent 9 days: <strong className="text-white">$1,200</strong></span>
+                  <span className="text-red-400 block">• James K. - Silent 14 days: <strong className="text-white">$840</strong></span>
+                  <span className="text-red-400 block">• B2B Outlet - Pending SLA invoice: <strong className="text-white">$300</strong></span>
+                </>
+              ) : (
+                <span className="text-stone-500 italic block mt-1">⚠️ SSE Stream Disconnected. Tap "Connect live SSE" button to start receiving inputs.</span>
+              )}
+            </p>
+          </div>
+
           <button
-            type="button"
-            onClick={handleRecoverAtRisk}
-            className="w-full mt-4 py-1.5 px-3 bg-red-500 hover:bg-red-600 text-white font-extrabold text-[9.5px] uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md text-center shrink-0 flex items-center justify-center gap-1.5"
+            onClick={handleBulkWinback}
+            className="w-full py-1.5 px-3 bg-red-500 hover:bg-red-650 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 text-center mt-2 shrink-0"
           >
             <ShieldAlert size={11} className="animate-bounce" />
-            <span>Recover Risk Now</span>
+            <span>Recover Silent VIPs</span>
           </button>
         </div>
 
-        {/* BENTO 2: ACTIVE PROFIT (Green border) */}
-        <div className={`p-4 rounded-[22px] border relative overflow-hidden transition-all flex flex-col justify-between hover:scale-[1.01] ${cardBgCls} border-emerald-500/40 shadow-lg`}>
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+        {/* Bento 2: Profit Health */}
+        <div className={`p-5 rounded-[24px] border relative overflow-hidden flex flex-col justify-between hover:scale-[1.01] transition-transform duration-200 ${cardBgStyle} border-emerald-500/40 shadow-stone-900/40 shadow-lg`}>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
           <div>
-            <div className="flex justify-between items-center mb-1 bg-transparent">
-              <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider font-mono">Active Profit Safeguard</span>
-              <span className="text-[8.5px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded-full font-bold">+12.4% vs last month ↑</span>
-            </div>
-            <div className="flex items-baseline gap-1.5 bg-transparent">
-              <h3 className="text-xl font-mono font-black text-white">${currentProfitValue.toLocaleString()}</h3>
-              <span className="text-[9.5px] text-emerald-400 font-bold uppercase tracking-wider font-mono">34% NET MARGIN</span>
+            <div className="flex justify-between items-center mb-1 bg-transparent select-none">
+              <span className="text-[9px] font-mono font-black uppercase text-emerald-400 tracking-wider">PROFIT HEALTH</span>
+              <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full select-none">
+                {isSimulatingLive ? '+12.4% Trend ↑' : 'STANDBY'}
+              </span>
             </div>
 
-            <div className="space-y-1.5 mt-3 pt-3 border-t border-stone-800/80">
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-emerald-500">✓</span> Burn category optimized: <span className="font-mono text-emerald-400 font-black">98% safe</span>
-              </p>
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-emerald-500">✓</span> Cash Runway count: <span className="font-mono text-emerald-400 font-black">150 days runway</span>
-              </p>
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-emerald-500">✓</span> Profit Leaks monitored: <span className="font-mono text-red-400 font-black">-${activeLeaksCount*140}/mo</span>
-              </p>
+            <div className="flex items-baseline gap-1.5 bg-transparent mb-1">
+              <h3 className="text-2xl font-mono font-black text-white">{isSimulatingLive ? `${profitMarginPercent}%` : '--%'}</h3>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">NET OPERATIONAL MARGIN</span>
             </div>
+
+            <p className="text-[10.5px] text-stone-300 font-mono mb-4 border-b border-stone-800/60 pb-2 bg-transparent">
+              Shield factors:
+              {isSimulatingLive ? (
+                <>
+                  <span className="text-emerald-400 block mt-1">• Cash Runway: <strong className="text-white">150 days</strong></span>
+                  <span className="text-emerald-400 block">• Cost creep: <strong className="text-white">Optimized</strong></span>
+                  <span className="text-emerald-400 block">• Leakage protection: <strong className="text-white">98% safe</strong></span>
+                </>
+              ) : (
+                <span className="text-stone-500 italic block mt-1">⚠️ Real-time fiscal analysis paused. Link stream to begin.</span>
+              )}
+            </p>
           </div>
 
           <button
-            type="button"
-            onClick={() => {
-              onTabChange('costguard');
-              showToast("💼 Navigated to CostGuard AI CFO ledger!");
-            }}
-            className="w-full mt-4 py-1.5 px-3 bg-[#111] hover:bg-stone-950 text-emerald-400 border border-emerald-500/30 font-black text-[9.5px] uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
+            onClick={() => { onTabChange('costguard'); showToast("💼 Switched to CostGuard CFO Studio"); }}
+            className="w-full py-1.5 px-3 bg-[#131211] hover:bg-stone-950 border border-emerald-500/30 text-emerald-400 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center mt-2 shrink-0"
           >
-            <span>View Cost Breakdown →</span>
+            <span>Optimize Net Margins →</span>
           </button>
         </div>
 
-        {/* BENTO 3: ACTIVE OPPORTUNITIES (Amber border) */}
-        <div className={`p-4 rounded-[22px] border relative overflow-hidden transition-all flex flex-col justify-between hover:scale-[1.01] ${cardBgCls} border-amber-500/40 shadow-lg`}>
-          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+        {/* Bento 3: Open Opportunities */}
+        <div className={`p-5 rounded-[24px] border relative overflow-hidden flex flex-col justify-between hover:scale-[1.01] transition-transform duration-200 ${cardBgStyle} border-amber-500/40 shadow-stone-900/40 shadow-lg`}>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
           <div>
-            <div className="flex justify-between items-center mb-1 bg-transparent">
-              <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider font-mono">Active Opportunities</span>
-              <span className="text-[8.5px] font-black bg-amber-500/10 text-amber-500 px-1.5 py-0.2 rounded font-mono uppercase">pipeline scanning</span>
-            </div>
-            <div className="flex items-baseline gap-1 bg-transparent">
-              <h3 className="text-xl font-mono font-black text-white">${currentOpportunitiesSum.toLocaleString()}</h3>
-              <span className="text-[9px] text-stone-200 font-medium italic">in open value channels</span>
+            <div className="flex justify-between items-center mb-1 bg-transparent select-none">
+              <span className="text-[9px] font-mono font-black uppercase text-amber-500 tracking-wider">OPEN OPPORTUNITIES</span>
+              <span className="text-[9px] font-mono font-black bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-md">
+                PIPELINE SCANNING
+              </span>
             </div>
 
-            <div className="space-y-1.5 mt-3 pt-3 border-t border-stone-800/80">
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-amber-500">→</span> <strong>5</strong> wholesale leads: <span className="font-mono text-amber-500 font-black">$1,800 pipe</span>
-              </p>
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-amber-500">→</span> <strong>3</strong> win-back prospects: <span className="font-mono text-amber-500 font-black">$900 potential</span>
-              </p>
-              <p className="text-[10px] text-stone-200 select-text font-medium flex items-center gap-1">
-                <span className="text-amber-500">→</span> <strong>2</strong> upsell signals logged: <span className="font-mono text-amber-500 font-black">$400 value</span>
-              </p>
+            <div className="flex items-baseline gap-1 bg-transparent mb-1">
+              <h3 className="text-2xl font-mono font-black text-white">{isSimulatingLive ? `$${currentOpportunitiesSum.toLocaleString()}` : '$0'}</h3>
+              <span className="text-[10px] text-stone-300 font-medium font-sans">across {opportunitiesCount} active deals</span>
             </div>
+
+            <p className="text-[10.5px] text-stone-300 font-mono mb-4 border-b border-stone-800/60 pb-2 bg-transparent select-text">
+              Wholesale opportunity logs:
+              {isSimulatingLive ? (
+                <>
+                  <span className="text-amber-500 block mt-1">• 5 B2B wholesale proposals: <strong className="text-white">$1,800</strong></span>
+                  <span className="text-amber-500 block">• 3 Loyalty stamp re-shares: <strong className="text-white">$900</strong></span>
+                  <span className="text-amber-500 block">• 2 WhatsApp organic prompts: <strong className="text-white">$500</strong></span>
+                </>
+              ) : (
+                <span className="text-stone-500 italic block mt-1">⚠️ Opportunity tracker offline. No active telemetry.</span>
+              )}
+            </p>
           </div>
 
           <button
-            type="button"
-            onClick={() => {
-              onTabChange('retainflow');
-              showToast("📈 Navigated to RetainFlow VIP Loyalty metrics!");
-            }}
-            className="w-full mt-4 py-1.5 px-3 bg-[#111] hover:bg-stone-950 text-amber-500 border border-amber-500/30 font-black text-[9.5px] uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
+            onClick={() => { onTabChange('retainflow'); showToast("📊 Switched to RetainFlow Analytics"); }}
+            className="w-full py-1.5 px-3 bg-[#131211] hover:bg-stone-950 border border-amber-500/30 text-amber-500 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center mt-2 shrink-0"
           >
-            <span>Target VIP Pipeline →</span>
+            <span>Scan Open Pipelines →</span>
           </button>
         </div>
 
       </div>
 
-      {/* CENTERPIECE: ARIA CORE INDEX (The main command panel block) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch min-h-0 flex-grow overflow-hidden select-none">
-        
-        {/* Main large card taking col-span-8 */}
-        <section className={`col-span-12 lg:col-span-8 p-4.5 rounded-[24px] border flex flex-col justify-between overflow-y-auto scrollbar-none relative ${cardBgCls}`}>
-          {/* Top border glowing strip */}
-          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600"></div>
+      {/* CENTER: ARIA STATUS AND VERBAL INTERACTION */}
+      <section className={`p-5 rounded-[24px] border flex flex-col justify-between relative ${cardBgStyle}`}>
+        {/* Top colorful gradient highlight bar */}
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-t-[24px]"></div>
 
-          <div className="space-y-4">
-            
-            {/* Interactive Header bar inside Centerpiece */}
-            <div className="flex justify-between items-center bg-transparent shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center border border-amber-500/20">
-                  <Bot size={15} className="animate-spin animate-duration-3000" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-[12px] uppercase text-white tracking-widest font-mono">
-                    {ariaName} Core Cognitive Index
-                  </h3>
-                  <p className="text-[9.5px] text-stone-200 uppercase font-mono tracking-wider font-semibold">Cognitive Agent Active</p>
-                </div>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center bg-transparent shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center border border-amber-500/20">
+                <Bot size={16} className="animate-pulse" />
               </div>
-
-              {/* Sound speaking volume switch */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSpeechEnabled(!speechEnabled);
-                  showToast(speechEnabled ? "🔇 voice feedback muted" : "🔊 Realtime speech reading activated!");
-                }}
-                className={`p-1.5 rounded-lg transition-all ${
-                  speechEnabled ? 'bg-amber-500 text-black shadow-md' : 'bg-stone-850 hover:bg-stone-800 text-white border border-stone-800'
-                }`}
-                title={speechEnabled ? "Mute Aria vocal answers" : "Speak results out loud"}
-              >
-                {speechEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
-              </button>
-            </div>
-
-            {/* Vocal Audio Subtitles Box & Speech output */}
-            <div className="p-3.5 bg-black/55 border border-stone-800/80 rounded-2xl flex flex-col sm:flex-row items-center gap-4 text-left">
-              {/* Spinning circular visualizer */}
-              <div className="relative shrink-0 flex items-center justify-center p-1 cursor-pointer" onClick={() => handleAriaInteraction("audit state")}>
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 shadow-[0_0_20px_rgba(245,158,11,0.3)] flex items-center justify-center text-xl border border-white/20">
-                  {ariaAvatar}
-                </div>
-                <div className="absolute -bottom-1 text-[7px] font-black uppercase text-amber-500 bg-[#141210] border border-stone-800 px-1.5 rounded-full select-none tracking-wider py-0.5 shadow-md">
-                  {ariaMode.toUpperCase()}
-                </div>
-              </div>
-              
-              <div className="flex-grow space-y-1 text-stone-200">
-                <span className="text-[8.5px] font-mono font-black text-amber-500 uppercase tracking-widest block">Verbal Directives Summary</span>
-                <p className="text-[11px] leading-relaxed italic font-semibold text-white">
-                  "{ariaSpeech}"
-                </p>
+              <div>
+                <h3 className="font-extrabold text-[12px] uppercase text-white tracking-widest font-mono">
+                  {ariaName} Core Status
+                </h3>
+                <p className="text-[9px] text-stone-300 uppercase font-mono tracking-wider font-semibold">Active Cognitive Employee</p>
               </div>
             </div>
 
-            {/* ACTIVE PRIORITY LIST SECURED */}
-            <div>
-              <span className="text-[8.5px] font-mono font-black text-stone-200 uppercase tracking-widest block mb-2">Priority Immediate Directives ({highRiskCustomersCount + activeLeaksCount ? highRiskCustomersCount + 1 : 3} alerts detected)</span>
-              
-              <div className="space-y-2 select-text">
-                
-                {/* 1. Silent VIP alert */}
-                <div className="p-2.5 rounded-xl bg-[#171513] border border-stone-800/60 flex items-center justify-between gap-3 font-mono text-[10px]">
-                  <div className="flex items-center gap-2 text-stone-100 font-bold">
-                    <span className="p-1 rounded bg-red-500/10 text-red-500"><AlertTriangle size={11} /></span>
-                    <span>⚠️ {highRiskCustomersCount > 0 ? highRiskCustomersCount : 3} VIP customer accounts are marked high-risk (risk: ${currentRiskSum})</span>
-                  </div>
-                  <button 
-                    onClick={handleRecoverAtRisk} 
-                    className="px-2 py-0.5 bg-amber-500 hover:bg-amber-450 text-black font-extrabold text-[8.5px] uppercase tracking-wider rounded-lg transition-all"
-                  >
-                    Re-engage
-                  </button>
-                </div>
-
-                {/* 2. Stock Alert */}
-                <div className="p-2.5 rounded-xl bg-[#171513] border border-stone-800/60 flex items-center justify-between gap-3 font-mono text-[10px]">
-                  <div className="flex items-center gap-2 text-stone-100 font-bold">
-                    <span className="p-1 rounded bg-amber-500/10 text-amber-500"><PackageSearch size={11} /></span>
-                    <span>📦 Supply trigger: accessories inventory threshold has breached baseline values</span>
-                  </div>
-                  <button 
-                    onClick={() => { onTabChange("stocksense"); showToast("📦 Routed to Inventory reorder module."); }} 
-                    className="px-2 py-0.5 bg-amber-500 hover:bg-amber-450 text-black font-extrabold text-[8.5px] uppercase tracking-wider rounded-lg transition-all"
-                  >
-                    Reorder Unit
-                  </button>
-                </div>
-
-                {/* 3. Margin Leaks alerts */}
-                <div className="p-2.5 rounded-xl bg-[#171513] border border-stone-800/60 flex items-center justify-between gap-3 font-mono text-[10px]">
-                  <div className="flex items-center gap-2 text-stone-100 font-bold">
-                    <span className="p-1 rounded bg-red-500/10 text-red-400"><Clock size={11} /></span>
-                    <span>💸 Tax reserve & invoice payment discrepancy found (-${activeLeaksCount * 140}/mo leakage)</span>
-                  </div>
-                  <button 
-                    onClick={() => { onTabChange("costguard"); showToast("💼 Routed to Profit optimization module."); }} 
-                    className="px-2 py-0.5 bg-amber-500 hover:bg-amber-450 text-black font-extrabold text-[8.5px] uppercase tracking-wider rounded-lg transition-all"
-                  >
-                    Verify Rule
-                  </button>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          {/* Prompt compilation console footer (Fixed bottom area inside layout) */}
-          <div className="mt-4 pt-3 border-t border-stone-800 flex flex-col md:flex-row gap-2.5 items-center select-none bg-transparent shrink-0">
-            <div className="flex flex-wrap gap-1.5 flex-1 w-full md:w-auto">
-              {['Scan for Leaks', 'Check VIP Loyalty', 'Review Restock Items'].map(tag => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleAriaInteraction(tag)}
-                  className="px-2.5 py-1 rounded bg-stone-950 hover:bg-stone-800 text-[10px] font-bold uppercase tracking-wider border border-stone-800 text-stone-100 transition-all cursor-pointer"
-                >
-                  🚀 {tag}
-                </button>
-              ))}
-            </div>
-
-            <form
-              onSubmit={(e) => { e.preventDefault(); if (customQuestion.trim()) { handleAriaInteraction(customQuestion); setCustomQuestion(""); } }}
-              className="flex w-full md:w-[320px] bg-black rounded-lg border border-stone-800/80 p-0.5"
+            {/* Speaking Toggle voice button */}
+            <button
+              onClick={() => {
+                setSpeechEnabled(!speechEnabled);
+                showToast(speechEnabled ? "🔇 voice speech muted" : "🔊 Vocal assistance active!");
+              }}
+              className={`p-1.5 rounded-lg transition-all flex items-center gap-1.5 text-[9.5px] font-mono font-black uppercase ${
+                speechEnabled ? 'bg-amber-500 text-black shadow-md' : 'bg-[#1e1a17] hover:bg-stone-800 text-white border border-stone-800'
+              }`}
             >
-              <input 
-                type="text"
-                placeholder="Ask Aria custom operations questions..."
-                value={customQuestion}
-                onChange={e => setCustomQuestion(e.target.value)}
-                className="flex-grow px-2 py-1 text-[9.5px] bg-transparent text-white focus:outline-none placeholder-stone-500"
-              />
-              <button 
-                type="submit" 
-                className="px-3 py-1 bg-amber-500 text-black text-[9px] font-black uppercase rounded"
-              >
-                Query
-              </button>
-            </form>
+              {speechEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+              <span>{speechEnabled ? "Voice Speak ON" : "Muted"}</span>
+            </button>
           </div>
-        </section>
 
-        {/* Live dynamic telemetry feed (taking col-span-4) */}
-        <section className={`col-span-12 lg:col-span-4 p-4.5 rounded-[24px] border flex flex-col justify-between overflow-hidden relative ${cardBgCls}`}>
-          <div className="flex flex-col h-full overflow-hidden justify-between">
-            
-            <div className="shrink-0 mb-3 select-none">
-              <span className="text-[8px] font-mono font-black text-amber-500 uppercase tracking-widest block mb-1">Aria Live Audit Stream</span>
-              <h3 className="font-extrabold text-[12px] uppercase text-white tracking-widest font-mono">Cognitive Activity Log</h3>
-            </div>
-
-            {/* Dynamic Activity Feed list scrolls internally logs */}
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-none my-1 select-text">
-              {activityLogs.map((log) => (
-                <div key={log.id} className="p-2.5 rounded-xl bg-stone-950 border border-stone-850 flex flex-col gap-1 transition-all">
-                  <div className="flex justify-between items-center w-full bg-transparent">
-                    <span className={`text-[8px] font-mono uppercase font-black tracking-wider px-1.5 py-0.5 rounded-md ${
-                      log.type === 'stock' ? 'bg-amber-500/10 text-amber-500' : log.type === 'cost' ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/10 text-emerald-400'
-                    }`}>
-                      {log.type}
-                    </span>
-                    <span className="text-[8px] text-stone-200 font-mono">{log.time}</span>
-                  </div>
-                  <p className="text-[10px] leading-relaxed font-bold text-stone-100 font-sans leading-normal">
-                    {log.msg}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Simulated Live Connection indicators as credit nodes */}
-            <div className="pt-2.5 border-t border-stone-850 shrink-0 text-center select-none bg-transparent">
-              <div className="flex items-center justify-between text-[8.5px] text-stone-200 font-mono">
-                <span className="flex items-center gap-1 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Active Connections: 5
-                </span>
-                <span className="font-bold flex items-center gap-1 text-emerald-400">
-                  ⚡ 0.04ms telemetry
-                </span>
+          {/* Interactive Bubble and Voice representation */}
+          <div className="p-4 bg-black/60 border border-stone-800/80 rounded-2xl flex flex-col sm:flex-row items-center gap-4 text-left relative">
+            <div className="relative shrink-0 flex items-center justify-center p-1 cursor-pointer" onClick={() => handleQueryAria("overall audit summary")}>
+              <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 shadow-[0_0_20px_rgba(245,158,11,0.25)] flex items-center justify-center text-2xl border border-white/20 select-none">
+                {ariaAvatar}
+              </div>
+              <div className="absolute -bottom-1 bg-black border border-stone-800 px-2 rounded-full text-[7.5px] font-mono font-black text-amber-500 uppercase tracking-widest select-none shadow">
+                {ariaMode}
               </div>
             </div>
 
-          </div>
-        </section>
-
-      </div>
-
-      {/* BOTTOM ROW: LIVE INBOX STRIP (Horizontal scrolling inbox strip) */}
-      <section className={`p-4 rounded-[24px] border flex flex-col gap-3 shrink-0 ${cardBgCls} bg-black border-amber-500/10`}>
-        <div className="flex justify-between items-center select-none shrink-0 bg-transparent">
-          <div className="flex items-baseline gap-2 bg-transparent">
-            <h4 className="font-extrabold text-[11px] text-white uppercase tracking-wider font-mono">Live Messaging Strip (click routing tag)</h4>
-            <span className="text-[8.5px] text-stone-200">Across central social streams directly</span>
+            <div className="flex-grow space-y-1 text-stone-200">
+              <span className="text-[8px] font-mono font-black text-amber-500 uppercase tracking-widest block">Active Vocal Directive</span>
+              <p className="text-xs leading-relaxed italic font-semibold text-white select-text">
+                "{ariaSpeech}"
+              </p>
+            </div>
           </div>
 
-          <button
-            onClick={() => {
-              onTabChange("social_omni");
-              showToast("📥 Switched tab to Unified Social Inbox!");
-            }}
-            className="text-[9.5px] text-amber-500 hover:text-amber-400 font-black uppercase flex items-center gap-1 transition-all cursor-pointer font-mono"
-          >
-            <span>Omni Inbox</span>
-            <ArrowRight size={10} />
-          </button>
+          {/* Business-Owner friendly, direct Human Metrics instead of tech token telemetry */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 border-t border-b border-stone-800/60 py-4 select-none">
+            <div className="text-center md:text-left bg-transparent">
+              <p className="text-[8px] font-mono font-black text-stone-400 uppercase tracking-wider">CONVERSATIONS HANDLED TODAY</p>
+              <h4 className="text-xl font-mono font-black text-amber-500 mt-1">{isSimulatingLive ? liveConversations : '0'}</h4>
+              <p className="text-[9px] text-[#22c55e] font-semibold">{isSimulatingLive ? '100% active coverage' : 'Standby'}</p>
+            </div>
+
+            <div className="text-center md:text-left bg-transparent">
+              <p className="text-[8px] font-mono font-black text-stone-400 uppercase tracking-wider">RESOLVED WITHOUT ESCALATION</p>
+              <h4 className="text-xl font-mono font-black text-emerald-400 mt-1">{isSimulatingLive ? liveResolved : '0'}</h4>
+              <p className="text-[9px] text-stone-300 font-semibold font-mono">{isSimulatingLive ? '87.2% auto-resolution rate' : '--'}</p>
+            </div>
+
+            <div className="text-center md:text-left bg-transparent">
+              <p className="text-[8px] font-mono font-black text-stone-400 uppercase tracking-wider">ESCALATED TO OPERATOR</p>
+              <h4 className="text-xl font-mono font-black text-red-400 mt-1">{isSimulatingLive ? liveEscalated : '0'}</h4>
+              <p className="text-[9px] text-stone-300 font-semibold">{isSimulatingLive ? 'Immediate routing assigned' : '--'}</p>
+            </div>
+
+            <div className="text-center md:text-left bg-transparent">
+              <p className="text-[8px] font-mono font-black text-stone-400 uppercase tracking-wider">ARIA RESPONSE TIME</p>
+              <h4 className="text-xl font-mono font-black text-cyan-400 mt-1">{isSimulatingLive ? '1.2s' : '--'}</h4>
+              <p className="text-[9px] text-stone-300 font-semibold">{isSimulatingLive ? 'Global average latency' : 'Offline'}</p>
+            </div>
+          </div>
         </div>
 
-        {/* Horizontal container */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none flex-nowrap w-full">
-          
-          {/* WhatsApp */}
-          <div 
-            onClick={() => { onTabChange("social_omni"); showToast("Routed via WhatsApp Stream FILTER"); }}
-            className="min-w-[190px] max-w-[210px] shrink-0 p-3 bg-stone-900 hover:bg-stone-850 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 shadow-sm font-mono active:scale-95"
-          >
-            <div className="flex justify-between items-center w-full bg-transparent">
-              <span className="text-[9px] text-emerald-400 font-black uppercase flex items-center gap-1"><MessageCircle size={10} /> WhatsApp</span>
-              <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">3</span>
-            </div>
-            <p className="text-[10px] font-extrabold text-white truncate truncate-ellipsis mt-0.5">James (B2B wholesale)</p>
-            <p className="text-[9px] text-stone-300 truncate font-sans">"Can I get a 10% discount if..."</p>
+        {/* Console Input Footer */}
+        <div className="mt-4 flex flex-col md:flex-row gap-3 items-center select-none shrink-0 border-t border-stone-800 pt-3">
+          <div className="flex flex-wrap gap-2 flex-1 w-full md:w-auto">
+            {['Audit margins', 'Loyalty status', 'Restock schedule'].map(tag => (
+              <button
+                key={tag}
+                onClick={() => handleQueryAria(tag)}
+                className="px-3 py-1 bg-[#100e0d] hover:bg-stone-800 text-[10px] font-bold uppercase tracking-wider border border-stone-800/80 rounded-lg text-stone-300 transition-all cursor-pointer"
+              >
+                🔮 {tag}
+              </button>
+            ))}
           </div>
 
-          {/* Instagram */}
-          <div 
-            onClick={() => { onTabChange("social_omni"); showToast("Routed via Instagram Stream FILTER"); }}
-            className="min-w-[190px] max-w-[210px] shrink-0 p-3 bg-stone-900 hover:bg-stone-850 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 shadow-sm font-mono active:scale-95"
+          <form
+            onSubmit={(e) => { e.preventDefault(); if (customQuestion.trim()) { handleQueryAria(customQuestion); setCustomQuestion(""); } }}
+            className="flex w-full md:w-[320px] bg-black rounded-xl border border-stone-800 p-0.5"
           >
-            <div className="flex justify-between items-center w-full bg-transparent">
-              <span className="text-[9px] text-pink-400 font-black uppercase flex items-center gap-1"><Instagram size={10} /> Instagram</span>
-              <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">1</span>
-            </div>
-            <p className="text-[10px] font-extrabold text-white truncate truncate-ellipsis mt-0.5">@wanderlust_shop</p>
-            <p className="text-[9px] text-stone-300 truncate font-sans">"Smart accessory kits are awesome!"</p>
-          </div>
-
-          {/* Email */}
-          <div 
-            onClick={() => { onTabChange("social_omni"); showToast("Routed via Email Stream FILTER"); }}
-            className="min-w-[190px] max-w-[210px] shrink-0 p-3 bg-stone-900 hover:bg-stone-850 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 shadow-sm font-mono active:scale-95"
-          >
-            <div className="flex justify-between items-center w-full bg-transparent">
-              <span className="text-[9px] text-purple-400 font-black uppercase flex items-center gap-1"><Mail size={10} /> Email (Gmail)</span>
-              <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">5</span>
-            </div>
-            <p className="text-[10px] font-extrabold text-white truncate truncate-ellipsis mt-0.5">SLA Dispatcher (Carlos)</p>
-            <p className="text-[9px] text-stone-300 truncate font-sans">"Check winter schedules for Madrid..."</p>
-          </div>
-
-          {/* FaceBook */}
-          <div 
-            onClick={() => { onTabChange("social_omni"); showToast("Routed via Messenger Stream FILTER"); }}
-            className="min-w-[190px] max-w-[210px] shrink-0 p-3 bg-stone-900 hover:bg-stone-850 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 shadow-sm font-mono active:scale-95"
-          >
-            <div className="flex justify-between items-center w-full bg-transparent">
-              <span className="text-[9px] text-blue-400 font-black uppercase flex items-center gap-1"><Facebook size={10} /> Facebook</span>
-              <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">2</span>
-            </div>
-            <p className="text-[10px] font-extrabold text-white truncate truncate-ellipsis mt-0.5">David Warner</p>
-            <p className="text-[9px] text-stone-300 truncate font-sans">"My premium kit orders states pending..."</p>
-          </div>
-
-          {/* Telegram */}
-          <div 
-            onClick={() => { onTabChange("social_omni"); showToast("Routed via Telegram Stream FILTER"); }}
-            className="min-w-[190px] max-w-[210px] shrink-0 p-3 bg-stone-900 hover:bg-stone-850 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 shadow-sm font-mono active:scale-95"
-          >
-            <div className="flex justify-between items-center w-full bg-transparent">
-              <span className="text-[9px] text-sky-400 font-black uppercase flex items-center gap-1"><Send size={10} /> Telegram</span>
-              <span className="px-1.5 py-0.2 bg-stone-800 text-stone-350 text-[7.5px] font-black rounded-full">0</span>
-            </div>
-            <p className="text-[10px] font-extrabold text-white truncate truncate-ellipsis mt-0.5">Elena Petrova</p>
-            <p className="text-[9px] text-stone-300 truncate font-sans">"API endpoint custom rate query..."</p>
-          </div>
-
+            <input 
+              type="text"
+              placeholder="Query Aria about business operations..."
+              value={customQuestion}
+              onChange={e => setCustomQuestion(e.target.value)}
+              className="flex-grow px-3 py-1 text-xs bg-transparent text-white focus:outline-none placeholder-stone-600"
+            />
+            <button 
+              type="submit" 
+              className="px-4 py-1.5 bg-amber-500 text-black text-[10px] font-black uppercase rounded-lg hover:bg-amber-450 transition-all cursor-pointer"
+            >
+              Send
+            </button>
+          </form>
         </div>
       </section>
 
-      {/* COGNITIVE TOKENS REFILL TANK IN-APP CHECKOUT DIALOG */}
+      {/* BOTTOM AREA: Activity Feed Real-time Horizontal layout + Live Message Strip Horizontal ticket ticker */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 shrink-0">
+        
+        {/* Activity Feed Container (taking col-span-5) */}
+        <div className={`lg:col-span-5 p-5 rounded-[24px] border flex flex-col justify-between overflow-hidden relative ${cardBgStyle}`}>
+          <div>
+            <span className="text-[8px] font-mono font-black text-amber-500 uppercase tracking-widest block mb-1">ACTIVITY FEED (PLAIN ENGLISH)</span>
+            <h3 className="font-extrabold text-[12px] uppercase text-white tracking-widest font-mono mb-2">Real-Time Channel Activity</h3>
+            
+            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 scrollbar-none select-text">
+              {activityLogs.length > 0 ? (
+                activityLogs.map((log) => (
+                  <div key={log.id} className="p-2.5 rounded-xl bg-black/40 border border-stone-800/60 flex flex-col gap-1">
+                    <div className="flex justify-between items-center w-full">
+                      <span className={`text-[8px] font-mono font-black uppercase px-2 py-0.5 rounded-md ${
+                        log.type === 'stock' ? 'bg-amber-500/10 text-amber-500' : log.type === 'cost' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'
+                      }`}>
+                        {log.type}
+                      </span>
+                      <span className="text-[8px] text-stone-400 font-mono">{log.time}</span>
+                    </div>
+                    <p className="text-[10px] font-sans font-bold leading-normal text-stone-100 leading-snug">
+                      {log.msg}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-stone-500 text-[10.5px] font-semibold italic border border-dashed border-stone-800 rounded-xl bg-black/20">
+                  ⚠️ Direct channel telemetry offline. Please active live WS/SSE stream above to pipe background channel events.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Live Messaging Strip (taking col-span-7) */}
+        <div className={`lg:col-span-7 p-5 rounded-[24px] border flex flex-col justify-between relative ${cardBgStyle} bg-black/60 border-amber-500/10`}>
+          <div className="flex justify-between items-center bg-transparent select-none shrink-0 mb-3">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-mono font-black text-amber-500 uppercase tracking-widest block">SOCIAL MULTI-STREAM</span>
+              <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">Live Messaging Strip (click routing tag)</h4>
+            </div>
+
+            <button
+              onClick={() => { onTabChange("social_omni"); showToast("📥 Routed to conversations!"); }}
+              className="text-[9px] text-amber-400 hover:text-amber-300 font-black uppercase flex items-center gap-1 transition-all cursor-pointer font-mono"
+            >
+              <span>Verify Inbox</span>
+              <ArrowRight size={10} />
+            </button>
+          </div>
+
+          {/* Scrollable multi stream horizontal picker list */}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none flex-nowrap w-full select-none justify-start">
+            
+            {/* WhatsApp */}
+            <div 
+              onClick={() => { onTabChange("social_omni"); showToast("Inbox scoped to WhatsApp Filters!"); }}
+              className="min-w-[135px] shrink-0 p-3 bg-[#1e1a17] hover:bg-stone-900 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 active:scale-95 text-xs font-mono"
+            >
+              <div className="flex justify-between items-center bg-transparent">
+                <span className="text-[8.5px] text-emerald-400 font-black uppercase flex items-center gap-1"><MessageCircle size={10} /> WhatsApp</span>
+                <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">3</span>
+              </div>
+              <p className="text-[9.5px] font-extrabold text-white truncate truncate-ellipsis mt-1">James Santos</p>
+              <p className="text-[8.5px] text-stone-300 font-sans truncate">"Can I get a bulk coupon..."</p>
+            </div>
+
+            {/* Instagram */}
+            <div 
+              onClick={() => { onTabChange("social_omni"); showToast("Inbox scoped to Instagram Filters!"); }}
+              className="min-w-[135px] shrink-0 p-3 bg-[#1e1a17] hover:bg-stone-900 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 active:scale-95 text-xs font-mono"
+            >
+              <div className="flex justify-between items-center bg-transparent">
+                <span className="text-[8.5px] text-pink-400 font-black uppercase flex items-center gap-1"><Instagram size={10} /> Instagram</span>
+                <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">1</span>
+              </div>
+              <p className="text-[9.5px] font-extrabold text-white truncate truncate-ellipsis mt-1">@wander_boutique</p>
+              <p className="text-[8.5px] text-stone-300 font-sans truncate font-semibold">"Awesome custom kit!"</p>
+            </div>
+
+            {/* Email */}
+            <div 
+              onClick={() => { onTabChange("social_omni"); showToast("Inbox scoped to Email Filters!"); }}
+              className="min-w-[135px] shrink-0 p-3 bg-[#1e1a17] hover:bg-stone-900 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 active:scale-95 text-xs font-mono"
+            >
+              <div className="flex justify-between items-center bg-transparent">
+                <span className="text-[8.5px] text-purple-400 font-black uppercase flex items-center gap-1"><Mail size={10} /> Gmail</span>
+                <span className="px-1.5 py-0.2 bg-red-500 text-white text-[7.5px] font-black rounded-full animate-pulse">5</span>
+              </div>
+              <p className="text-[9.5px] font-extrabold text-white truncate truncate-ellipsis mt-1">Carlos Dispatcher</p>
+              <p className="text-[8.5px] text-stone-300 font-sans truncate">"Confirming invoice restock..."</p>
+            </div>
+
+            {/* Facebook */}
+            <div 
+              onClick={() => { onTabChange("social_omni"); showToast("Inbox scoped to Facebook Filters!"); }}
+              className="min-w-[135px] shrink-0 p-3 bg-[#1e1a17] hover:bg-stone-900 border border-stone-800 rounded-xl cursor-pointer transition-all flex flex-col gap-1 active:scale-95 text-xs font-mono"
+            >
+              <div className="flex justify-between items-center bg-transparent">
+                <span className="text-[8.5px] text-blue-400 font-black uppercase flex items-center gap-1">Facebook</span>
+                <span className="px-1.5 py-0.2 bg-stone-800 text-stone-400 text-[7.5px] font-black rounded-full">0</span>
+              </div>
+              <p className="text-[9.5px] font-extrabold text-white truncate truncate-ellipsis mt-1">David Warner</p>
+              <p className="text-[8.5px] text-stone-300 font-sans truncate">"Are the accounts linked?"</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* COGNITIVE TOKENS REFILL MODAL */}
       <AnimatePresence>
         {showTokenModal && (
           <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -740,126 +803,73 @@ export default function Dashboard({
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-[#1C1917] border border-stone-800 rounded-[28px] p-6 max-w-md w-full text-white space-y-4 shadow-2xl relative font-sans"
             >
-              {/* Glowing header line */}
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-t-[28px]"></div>
-
+              
               <div className="flex justify-between items-start bg-transparent">
                 <div>
                   <span className="text-[8.5px] font-black uppercase text-amber-500 font-mono tracking-widest block mb-0.5">Secure Transaction Panel</span>
-                  <h3 className="text-md font-black text-white flex items-center gap-1">
-                    <Zap className="fill-amber-500 text-amber-500 animate-pulse" size={16} />
+                  <h3 className="text-md font-black text-white flex items-center gap-1 font-sans">
+                    <Zap className="fill-amber-500 text-amber-500 animate-pulse animate-duration-1000" size={16} />
                     Refill Cognitive Token Tank
                   </h3>
                 </div>
-                <button 
-                  onClick={() => setShowTokenModal(false)}
-                  className="p-1 px-2.5 rounded-lg bg-stone-900 border border-stone-800 text-stone-200 hover:text-white transition-all text-xs"
-                >
-                  ✕
-                </button>
+                <button onClick={() => setShowTokenModal(false)} className="text-stone-300 hover:text-white px-2 cursor-pointer text-sm">✕</button>
               </div>
 
-              <p className="text-[11px] text-stone-200 leading-relaxed font-semibold">
-                Aria runs deep telemetry audits, drafts customer auto-replies, and triggers re-engagements. These actions consume real Sandbox cognitive computing tokens. Select a refill package to continue:
+              <p className="text-[11px] text-stone-300 leading-relaxed font-semibold">
+                Aria runs deep telemetry audits, drafts customer auto-replies, and triggers re-engagements. Select a refill package to continue:
               </p>
 
-              {/* Tiers choosing list */}
-              <div className="space-y-2 bg-transparent select-none">
-                
-                {/* 1. Micro */}
-                <button
-                  type="button"
-                  onClick={() => setRefillTier('micro')}
-                  className={`w-full text-left p-3.5 rounded-2xl border transition-all flex justify-between items-center ${
-                    refillTier === 'micro' 
-                      ? 'bg-amber-500/10 border-amber-500/60 text-amber-500' 
-                      : 'bg-stone-900/60 border-stone-850 text-stone-200 hover:bg-stone-900'
-                  }`}
-                >
-                  <div className="space-y-0.5">
+              <div className="space-y-2 select-none">
+                <button type="button" onClick={() => setRefillTier('micro')} className={`w-full text-left p-3 rounded-2xl border transition-all flex justify-between items-center ${refillTier === 'micro' ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'bg-stone-900/60 border-stone-850 text-stone-200'}`}>
+                  <div>
                     <span className="text-xs font-black block">Basic Token Refill</span>
-                    <span className="text-[10px] text-stone-300 font-medium block">Adds 1,000 Sandbox tokens to active reserve</span>
+                    <span className="text-[10px] text-stone-400 block">Adds 1,000 Sandbox tokens</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-mono font-black block">$9.00</span>
-                    <span className="text-[8px] text-stone-400 block font-mono">one-time charge</span>
-                  </div>
+                  <span className="text-sm font-mono font-black">$9.00</span>
                 </button>
 
-                {/* 2. Mega (Recommended) */}
-                <button
-                  type="button"
-                  onClick={() => setRefillTier('mega')}
-                  className={`w-full text-left p-3.5 rounded-2xl border transition-all flex justify-between items-center relative overflow-hidden ${
-                    refillTier === 'mega' 
-                      ? 'bg-amber-500/10 border-amber-500/60 text-amber-500' 
-                      : 'bg-stone-900/60 border-stone-850 text-stone-200 hover:bg-stone-900'
-                  }`}
-                >
-                  <span className="absolute top-0 right-3 bg-amber-500 text-black text-[7px] font-black uppercase px-2 py-0.5 rounded-b font-mono tracking-wider">RECOMMENDED</span>
-                  <div className="space-y-0.5">
+                <button type="button" onClick={() => setRefillTier('mega')} className={`w-full text-left p-3 rounded-2xl border transition-all flex justify-between items-center relative overflow-hidden ${refillTier === 'mega' ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'bg-stone-900/60 border-stone-850 text-stone-200'}`}>
+                  <span className="absolute top-0 right-3 bg-amber-500 text-black text-[7px] font-black uppercase px-2 py-0.5 rounded-b font-mono">POPULAR</span>
+                  <div>
                     <span className="text-xs font-black block">Standard Charging Tank</span>
-                    <span className="text-[10px] text-stone-300 font-medium block">Adds 2,500 Sandbox tokens to active reserve</span>
+                    <span className="text-[10px] text-stone-400 block">Adds 2,500 Sandbox tokens</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-mono font-black block">$19.00</span>
-                    <span className="text-[8px] text-stone-400 block font-mono">one-time charge</span>
-                  </div>
+                  <span className="text-sm font-mono font-black">$19.00</span>
                 </button>
 
-                {/* 3. Infinite */}
-                <button
-                  type="button"
-                  onClick={() => setRefillTier('infinite')}
-                  className={`w-full text-left p-3.5 rounded-2xl border transition-all flex justify-between items-center ${
-                    refillTier === 'infinite' 
-                      ? 'bg-amber-500/10 border-amber-500/60 text-amber-500' 
-                      : 'bg-stone-900/60 border-stone-850 text-stone-200 hover:bg-stone-900'
-                  }`}
-                >
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-black block">Mega Professional reserves</span>
-                    <span className="text-[10px] text-stone-300 font-medium block">Adds 5,000 Sandbox tokens to active reserve</span>
+                <button type="button" onClick={() => setRefillTier('infinite')} className={`w-full text-left p-3 rounded-2xl border transition-all flex justify-between items-center ${refillTier === 'infinite' ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'bg-stone-900/60 border-stone-850 text-stone-200'}`}>
+                  <div>
+                    <span className="text-xs font-black block">Mega Professional</span>
+                    <span className="text-[10px] text-stone-400 block">Adds 5,000 Sandbox tokens</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-mono font-black block">$29.00</span>
-                    <span className="text-[8px] text-stone-400 block font-mono">one-time charge</span>
-                  </div>
+                  <span className="text-sm font-mono font-black">$29.00</span>
                 </button>
-
               </div>
 
-              {/* Secure strip details */}
               <div className="p-3 bg-stone-950 rounded-xl border border-stone-900 text-stone-200 flex items-center gap-2 font-mono text-[9.5px]">
                 <ShieldCheck size={14} className="text-emerald-500" />
                 <span>Compliant Checkout via Sandbox Gateway (Card ending 4242)</span>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setShowTokenModal(false)} className="flex-1 py-1.5 rounded-xl bg-stone-900 text-stone-200 border border-stone-800 text-[10.5px] font-bold uppercase cursor-pointer">Cancel</button>
                 <button
                   type="button"
-                  onClick={() => setShowTokenModal(false)}
-                  className="flex-1 py-2 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-200 border border-stone-800 text-[10.5px] font-bold uppercase transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRefillPremiumTokens}
+                  onClick={() => {
+                    setIsProcessingPayment(true);
+                    setTimeout(() => {
+                      const amount = refillTier === 'micro' ? 1000 : refillTier === 'mega' ? 2500 : 5000;
+                      setTokens(prev => Math.min(maxTokens, prev + amount));
+                      setIsProcessingPayment(false);
+                      setShowTokenModal(false);
+                      showToast(`⚡ payment Successful! Credited ${amount} Cognitive Tokens.`);
+                    }, 1200);
+                  }}
                   disabled={isProcessingPayment}
-                  className="flex-grow py-2 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-black text-[10.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-75 focus:outline-none"
+                  className="flex-grow py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-[10.5px] font-black uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  {isProcessingPayment ? (
-                    <>
-                      <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-                      <span>Processing Payment...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={12} />
-                      <span>Authorize Refill & Credit</span>
-                    </>
-                  )}
+                  {isProcessingPayment ? "Crediting..." : "Authorize Refill"}
                 </button>
               </div>
             </motion.div>

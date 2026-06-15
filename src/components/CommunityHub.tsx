@@ -25,9 +25,16 @@ interface FeedPost {
 interface CommunityHubProps {
   theme: 'light' | 'dark';
   showToast: (msg: string) => void;
+  isSimulatingLive: boolean;
+  setIsSimulatingLive: (val: boolean) => void;
 }
 
-export default function CommunityHub({ theme, showToast }: CommunityHubProps) {
+export default function CommunityHub({ 
+  theme, 
+  showToast,
+  isSimulatingLive,
+  setIsSimulatingLive
+}: CommunityHubProps) {
   const isDark = theme === 'dark';
 
   const [posts, setPosts] = useState<FeedPost[]>([
@@ -131,7 +138,7 @@ export default function CommunityHub({ theme, showToast }: CommunityHubProps) {
   const inputBgCls = isDark ? 'bg-stone-950 border-stone-850 text-white rounded-2xl' : 'bg-neutral-50 border border-neutral-250 text-[#1C1917] rounded-xl';
 
   return (
-    <div className="space-y-4 max-h-[calc(100vh-140px)] flex flex-col overflow-hidden">
+    <div className="space-y-4 max-h-[calc(100vh-140px)] flex flex-col overflow-y-auto pr-1 pb-6 scrollbar-thin">
 
       {/* Main Header */}
       <div className={`p-4 px-5 rounded-[24px] border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shrink-0 ${cardBgCls}`}>
@@ -165,6 +172,28 @@ export default function CommunityHub({ theme, showToast }: CommunityHubProps) {
           </div>
         </div>
       </div>
+
+      {!isSimulatingLive ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center rounded-[28px] border border-dashed border-amber-500/25 bg-stone-900/10 font-sans select-none max-w-xl mx-auto my-12 w-full">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5 shadow-inner">
+            <Users size={30} className="animate-pulse" />
+          </div>
+          <h3 className="text-base font-black uppercase text-stone-100 tracking-wider">Community Hub Standing By</h3>
+          <p className="text-xs text-stone-400 mt-2 leading-relaxed max-w-sm">
+            Principal logs, loyalty member discussions, and automatic VIP feed posts are currently standing by. Align real-time customer data feeds from the telemetry stream to sync community posts instantly.
+          </p>
+          <button
+            onClick={() => {
+              setIsSimulatingLive(true);
+              localStorage.setItem('omni_dashboard_simulating', 'true');
+            }}
+            className="mt-6 px-6 py-3 bg-amber-500 hover:bg-amber-450 text-black text-[10.5px] font-black uppercase tracking-widest rounded-xl cursor-pointer transition-all shadow-lg active:scale-97 animate-pulse"
+          >
+            🔌 Connect Live Telemetry Stream
+          </button>
+        </div>
+      ) : (
+        <>
 
       {/* Embedded Walkthrough Tutorial if active */}
       {isVideoOpen && (
@@ -326,6 +355,8 @@ export default function CommunityHub({ theme, showToast }: CommunityHubProps) {
         </div>
 
       </div>
+      </>
+      )}
     </div>
   );
 }

@@ -78,6 +78,8 @@ import ShortcutsModal from './components/ShortcutsModal';
 import TelephonyDialer from './components/TelephonyDialer';
 import HelpCenterPanel from './components/HelpCenterPanel';
 import ProblemFeatureMatrix from './components/ProblemFeatureMatrix';
+import AriaFloatingCompanion from './components/AriaFloatingCompanion';
+import ForgeLogo from './components/ForgeLogo';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -186,7 +188,13 @@ export default function App() {
   }, [activeTourStep]);
 
   // User Onboarding State
-  const [onboarded, setOnboarded] = useState(true);
+  const [onboarded, setOnboarded] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('omni_onboarded');
+      if (saved) return saved === 'true';
+    } catch (e) {}
+    return false; // Default to showing welcoming onboarding setup wizard
+  });
 
   const [profile, setProfile] = useState(() => {
     try {
@@ -215,6 +223,19 @@ export default function App() {
   });
 
   const isDark = theme === 'dark';
+
+  const [isAnnualBilling, setIsAnnualBilling] = useState(false);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+  // Team Roles System local persistence state
+  const [teamMembers, setTeamMembers] = useState<Array<{ id: string; name: string; email: string; role: 'Owner' | 'Manager' | 'Staff'; joinedDate: string }>>([
+    { id: '1', name: 'Sarah Lin', email: 'owner@linboutique.com', role: 'Owner', joinedDate: '2026-01-10' },
+    { id: '2', name: 'Marcus Brody', email: 'marcus@linboutique.com', role: 'Manager', joinedDate: '2026-03-15' },
+    { id: '3', name: 'Leah Vance', email: 'leah@linboutique.com', role: 'Staff', joinedDate: '2026-05-01' }
+  ]);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'Owner' | 'Manager' | 'Staff'>('Staff');
 
   // Profile Edit modal
   const [profileModalOpen, setProfileModalOpen] = useState(false);
@@ -526,9 +547,26 @@ export default function App() {
   ];
 
   // Global Interactive Mock Datasets running the app features reactively (EMPTY BY DEFAULT)
+  const [isSimulatingLive, setIsSimulatingLive] = useState<boolean>(() => {
+    return localStorage.getItem('omni_dashboard_simulating') === 'true';
+  });
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [leaks, setLeaks] = useState<ProfitLeak[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+
+  // Automatically sync datasets when `isSimulatingLive` changes
+  React.useEffect(() => {
+    if (isSimulatingLive) {
+      setCustomers(STARTER_CUSTOMERS);
+      setLeaks(STARTER_LEAKS);
+      setProducts(STARTER_PRODUCTS);
+    } else {
+      setCustomers([]);
+      setLeaks([]);
+      setProducts([]);
+    }
+  }, [isSimulatingLive]);
 
   // Aria Personalization States (load from localStorage if available)
   const [ariaName, setAriaName] = useState(() => localStorage.getItem('omni_aria_name') || 'Aria AI');
@@ -557,8 +595,8 @@ export default function App() {
     }`}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentTab('landing')}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-black font-black shadow-lg shadow-amber-500/20">
-            <Sparkles size={16} />
+          <div className="w-8 h-8 rounded-xl bg-[#110F0E] border border-stone-850 flex items-center justify-center text-black font-black shadow-lg shadow-amber-500/5">
+            <ForgeLogo size={24} />
           </div>
           <span className={`font-extrabold text-xl tracking-tight ${isDark ? 'text-white' : 'text-[#1C1917]'}`}>{t.brandLogo}</span>
         </div>
@@ -696,7 +734,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className={`text-3xl md:text-5xl font-black tracking-tight mb-4 transition-colors ${isDark ? 'text-white' : 'text-[#1C1917]'}`}>Three Engines. Complete Control.</h2>
-            <p className={`text-sm max-w-2xl mx-auto transition-colors ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>Skip separate unintegrated software tools. Omni AI unites marketing loyalty, accounting monitoring, and reordering sequences natively.</p>
+            <p className={`text-sm max-w-2xl mx-auto transition-colors ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>Skip separate unintegrated software tools. Forge AI unites marketing loyalty, accounting monitoring, and reordering sequences natively.</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -856,7 +894,7 @@ export default function App() {
             }`}>
               <div className="font-black uppercase tracking-widest text-[10px] flex items-center">Capability</div>
               <div className="font-black text-amber-500 text-center flex items-center justify-center gap-1.5 uppercase text-xs tracking-wider">
-                <Sparkles size={16} /> Omni System Suite
+                <Sparkles size={16} /> Forge System Suite
               </div>
               <div className="font-black uppercase tracking-widest text-[10px] text-center flex items-center justify-center">Legacy App Handlers</div>
             </div>
@@ -913,10 +951,10 @@ export default function App() {
     }`}>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentTab('landing')}>
-          <div className="w-6 h-6 rounded bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-black font-bold">
-            <Sparkles size={12} />
+          <div className="w-6 h-6 rounded bg-[#110F0E] border border-stone-850 flex items-center justify-center text-black font-bold">
+            <ForgeLogo size={18} />
           </div>
-          <span className={`font-extrabold text-sm tracking-tight ${isDark ? 'text-white' : 'text-[#1C1917]'}`}>Omni AI</span>
+          <span className={`font-extrabold text-sm tracking-tight ${isDark ? 'text-white' : 'text-[#1C1917]'}`}>Forge AI</span>
         </div>
         <p className={`${isDark ? 'text-stone-500' : 'text-neutral-400'} text-xs font-semibold`}>Empowering retail merchants with autonomous cloud-native intelligence</p>
         <div className={`flex gap-6 text-xs font-extrabold uppercase tracking-widest ${isDark ? 'text-stone-300' : 'text-[#1C1917]'}`}>
@@ -1055,11 +1093,11 @@ export default function App() {
  
                <div className="p-8">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="w-7 h-7 rounded bg-gradient-to-tr from-amber-500 to-amber-600 text-black flex items-center justify-center">
-                    <Sparkles size={14} />
+                  <div className="w-7 h-7 rounded bg-[#110F0E] border border-stone-850 flex items-center justify-center text-black">
+                    <ForgeLogo size={20} />
                   </div>
                   <span className="font-extrabold text-[#F59E0B] text-xs uppercase tracking-widest font-mono">
-                    Omni Setup Portal — Step {onboardingStep} of {onbRole === 'customer' ? 2 : 3}
+                    Forge Setup Portal — Step {onboardingStep} of {onbRole === 'customer' ? 2 : 3}
                   </span>
                 </div>
  
@@ -1342,11 +1380,11 @@ export default function App() {
                 {/* Brand Logo Header */}
                 <div className={`flex items-center justify-between mb-5 border-b pb-3 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-xl flex items-center justify-center text-black font-extrabold shadow-md">
-                      <Sparkles size={16} />
+                    <div className="w-8 h-8 bg-[#110F0E] border border-stone-850 rounded-xl flex items-center justify-center text-black font-extrabold shadow-md">
+                      <ForgeLogo size={24} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h1 className={`text-xs font-black tracking-tight truncate ${isDark ? 'text-white' : 'text-[#1C1917]'}`}>{profile.storeName || 'Omni AI'}</h1>
+                      <h1 className={`text-xs font-black tracking-tight truncate ${isDark ? 'text-white' : 'text-[#1C1917]'}`}>{profile.storeName || 'Forge AI'}</h1>
                       <span className={`text-[8px] block uppercase font-mono tracking-widest ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>{profile.ownerName || 'Operator'}</span>
                     </div>
                   </div>
@@ -1427,7 +1465,7 @@ export default function App() {
                     }`}
                   >
                     <Zap size={14} className="text-amber-500 animate-pulse" />
-                    <span>⚡ WORKFLOW CANVAS</span>
+                    <span>Flow Builder</span>
                   </button>
                   <button 
                     onClick={() => { setCurrentTab('pricing'); setMobileMenuOpen(false); }}
@@ -1477,25 +1515,25 @@ export default function App() {
           <div className="flex items-center justify-center mb-6">
             <div 
               onClick={() => setCurrentTab('dashboard')}
-              className="w-10 h-10 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-black font-extrabold shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95 transition-all"
-              title={`${profile.storeName || 'Omni AI'} (Go to Dashboard)`}
+              className="w-10 h-10 bg-[#110F0E] border border-stone-800 rounded-full flex items-center justify-center text-black font-extrabold shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95 transition-all"
+              title={`${profile.storeName || 'Forge AI'} (Go to Dashboard)`}
             >
-              <Sparkles size={16} />
+              <ForgeLogo size={28} />
             </div>
           </div>
 
           <nav className="flex flex-col items-center gap-1.5 w-full">
             {[
               { id: 'dashboard', label: profile.customDashboardName || t.navDashboard, icon: LayoutDashboard },
-              { id: 'contacts', label: 'Contacts CRM', icon: Users },
-              { id: 'social_omni', label: 'Unified Social Inbox', icon: Mail, pulse: true },
+              { id: 'contacts', label: 'People Hub', icon: Users },
+              { id: 'social_omni', label: 'Conversations', icon: Mail, pulse: true },
               { id: 'retainflow', label: profile.customRetainName || t.navRetainFlow, icon: Activity },
               { id: 'costguard', label: profile.customCostName || t.navCostGuard, icon: Coins },
               { id: 'stocksense', label: profile.customStockName || t.navStockSense, icon: PackageSearch },
               { id: 'aria', label: profile.customAriaName || t.navAria, icon: Bot },
-              { id: 'workflows', label: '⚡ WORKFLOW CANVAS', icon: Zap, pulse: true },
-              { id: 'notepad', label: 'Workspace Notebook', icon: FileText },
-              { id: 'community', label: 'Community Feeds', icon: Share2 },
+              { id: 'workflows', label: 'Flow Builder', icon: Zap, pulse: true },
+              { id: 'notepad', label: 'Notebook', icon: FileText },
+              { id: 'community', label: 'Community', icon: Share2 },
               { id: 'pricing', label: t.navPricing, icon: CreditCard },
               { id: 'settings', label: t.navSettings, icon: Sliders },
             ].map((item) => {
@@ -1961,7 +1999,11 @@ export default function App() {
           }`}>
 
         {/* WORKSPACE MIDDLE VIEW CONTENT PANEL */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 max-w-full w-full mx-auto relative">
+        <div className={`flex-1 max-w-full w-full mx-auto relative ${
+          currentTab === 'social_omni' 
+            ? 'h-full flex flex-col overflow-hidden p-2.5 sm:p-4' 
+            : 'overflow-y-auto p-3 sm:p-5 md:p-6'
+        }`}>
           
           {/* DYNAMIC WELCOMING FLOATING TOAST (NON-INTRUSIVE) */}
           <AnimatePresence>
@@ -2016,6 +2058,8 @@ export default function App() {
                 ariaTone={ariaTone}
                 ariaAvatar={ariaAvatar}
                 seedStarterData={seedStarterData}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
               />
             </div>
 
@@ -2024,6 +2068,8 @@ export default function App() {
                 customers={customers} 
                 setCustomers={setCustomers} 
                 theme={theme}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
               />
             </div>
 
@@ -2032,6 +2078,9 @@ export default function App() {
                 leaks={leaks} 
                 setLeaks={setLeaks} 
                 theme={theme}
+                onTriggerToast={showToast}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
               />
             </div>
 
@@ -2040,15 +2089,19 @@ export default function App() {
                 products={products} 
                 setProducts={setProducts} 
                 theme={theme}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
               />
             </div>
 
-            <div className={currentTab === 'contacts' ? 'block' : 'hidden'}>
+            <div className={currentTab === 'contacts' ? 'block max-h-[calc(100vh-120px)] overflow-y-auto pr-1 scrollbar-thin' : 'hidden'}>
               <ContactsHub 
                 theme={theme}
                 syncedContacts={syncedContacts}
                 setSyncedContacts={setSyncedContacts}
                 showToast={showToast}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
                 onTriggerCall={(phone) => {
                   setTelephonyOpen(true);
                   showToast(`☎️ Dispatching Aria Telephony Dial Center for: ${phone}`);
@@ -2056,24 +2109,33 @@ export default function App() {
               />
             </div>
 
-            <div className={currentTab === 'social_omni' ? 'block' : 'hidden'}>
+            <div className={currentTab === 'social_omni' ? 'block h-full flex flex-col min-h-0 overflow-hidden' : 'hidden'}>
               <SocialHub 
                 theme={theme}
                 showToast={showToast}
+                userRole={profile.userRole || 'owner'}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
+                onRelaunchOnboarding={() => {
+                  setOnboarded(false);
+                  setOnboardingStep(1);
+                }}
               />
             </div>
 
-            <div className={currentTab === 'notepad' ? 'block' : 'hidden'}>
+            <div className={currentTab === 'notepad' ? 'block max-h-[calc(100vh-120px)] overflow-y-auto pr-1 scrollbar-thin' : 'hidden'}>
               <AdvancedNotes 
                 theme={theme}
                 showToast={showToast}
               />
             </div>
 
-            <div className={currentTab === 'community' ? 'block' : 'hidden'}>
+            <div className={currentTab === 'community' ? 'block max-h-[calc(100vh-120px)] overflow-y-auto pr-1 scrollbar-thin' : 'hidden'}>
               <CommunityHub 
                 theme={theme}
                 showToast={showToast}
+                isSimulatingLive={isSimulatingLive}
+                setIsSimulatingLive={setIsSimulatingLive}
               />
             </div>
 
@@ -2094,137 +2156,336 @@ export default function App() {
             </div>
 
             {/* BRAND NEW INTERACTIVE BILLING & PRICING PLANS TAB SCREEN */}
-            <div className={currentTab === 'pricing' ? 'block font-sans text-white' : 'hidden'}>
-                <div className="space-y-4 max-w-6xl mx-auto select-none">
-                  <div className="py-3 px-5 rounded-xl border bg-stone-900 border-stone-800 text-white">
-                    <h2 className="text-base font-black tracking-tight text-white">Enterprise Scale Plans</h2>
-                    <p className="text-[10px] text-stone-300 font-medium">Upgrade your automated retention limits, reordering pipelines, and unlock Dedicated Support Advisors.</p>
+            <div className={currentTab === 'pricing' ? 'block font-sans text-white max-h-[calc(100vh-140px)] overflow-y-auto pr-1 scrollbar-thin' : 'hidden'}>
+              <div className="space-y-6 max-w-5xl mx-auto select-none pb-8 text-left">
+                
+                {/* Header Banner & Billing Switcher */}
+                <div className={`p-6 rounded-[24px] border flex flex-col md:flex-row justify-between items-center gap-4 ${
+                  isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200 text-[#1C1917]'
+                }`}>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase text-amber-500 tracking-wider font-mono">Subscription Pricing</span>
+                    <h2 className="text-xl font-black tracking-tight text-white">Flexible SaaS Core Rates</h2>
+                    <p className={`text-xs ${isDark ? 'text-stone-300' : 'text-stone-600'}`}>
+                      Select your operational scale. Annual subscriptions get an instant 20% discount on standard rates.
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    
-                    {/* Tier 1 */}
-                    <div className={`p-6 md:p-8 min-h-[440px] rounded-[24px] border flex flex-col justify-between transition-all duration-300 hover:shadow-lg ${
-                      profile.tier === 'Starter Plan' 
-                        ? 'border-amber-400 bg-[#1C1917] text-white shadow-xl' 
-                        : 'bg-stone-900 border-stone-800 text-white'
-                    }`}>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[9px] font-mono font-black uppercase text-stone-400 tracking-wider">Plan A</span>
-                          {profile.tier === 'Starter Plan' && (
-                            <span className="text-[8px] font-black bg-amber-500 text-black px-1.5 py-0.5 rounded-full uppercase">Current</span>
-                          )}
-                        </div>
-                        <h3 className="text-sm font-black mb-0.5 uppercase tracking-wide text-white">Standard Starter</h3>
-                        <p className="text-xl font-mono font-black text-amber-500 mb-2">$29<span className="text-[10px] font-normal text-stone-400">/mo</span></p>
-                        <p className="text-[11px] text-stone-300 leading-relaxed mb-4">Excellent baseline monitoring capabilities for small merchant units.</p>
-
-                        <div className="space-y-2 pt-3 border-t border-dashed border-stone-800 text-[11px] text-stone-300">
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">10 Win-back automation logs</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Standard email backups alerts</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Initial profit diagnostics</span></div>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => {
-                          setProfile((p: any) => ({ ...p, tier: 'Starter Plan' }));
-                          showToast("✨ Successfully down-graded to Starter Plan ($29/mo). Limits active.");
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-[10px] font-black uppercase border tracking-wider transition-all ${
-                          profile.tier === 'Starter Plan' 
-                            ? 'bg-amber-500 text-black border-amber-500 cursor-default' 
-                            : 'bg-transparent text-amber-500 border-amber-500 hover:bg-amber-500 hover:text-black'
-                        }`}
-                      >
-                        {profile.tier === 'Starter Plan' ? 'Tier Active' : 'Activate Starter'}
-                      </button>
-                    </div>
-
-                    {/* Tier 2 */}
-                    <div className={`p-6 md:p-8 min-h-[440px] rounded-[24px] border relative flex flex-col justify-between transition-all duration-300 hover:shadow-lg ${
-                      profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active'
-                        ? 'border-amber-400 bg-[#1C1917] text-white shadow-xl' 
-                        : 'bg-stone-900 border-stone-800 text-white'
-                    }`}>
-                      <div className="absolute top-0 right-4 -translate-y-1/2 bg-amber-500 text-black text-[8px] font-mono font-black uppercase px-2 py-0.5 rounded-full border border-[#1C1917] shadow-md">POPULAR</div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[9px] font-mono font-black uppercase text-stone-400 tracking-wider">Plan B</span>
-                          {(profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active') && (
-                            <span className="text-[8px] font-black bg-amber-500 text-black px-1.5 py-0.5 rounded-full uppercase">Current</span>
-                          )}
-                        </div>
-                        <h3 className="text-sm font-black mb-0.5 uppercase tracking-wide text-white">Growth Suite</h3>
-                        <p className="text-xl font-mono font-black text-amber-500 mb-2">$79<span className="text-[10px] font-normal text-stone-400">/mo</span></p>
-                        <p className="text-[11px] text-stone-300 leading-relaxed mb-4">Deep cost analysis root-cause insights and automatic reorder parameters.</p>
-
-                        <div className="space-y-2 pt-3 border-t border-dashed border-stone-800 text-[11px] text-stone-300">
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Unlimited WhatsApp dispatch</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Cash-aware automated reorders</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Weekly core feedback briefs</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">High loyalty VIP tags</span></div>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => {
-                          setProfile((p: any) => ({ ...p, tier: 'Growth Suite' }));
-                          showToast("✨ Successfully activated Growth Suite ($79/mo). Aria features synced!");
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-[10px] font-black uppercase border tracking-wider transition-all ${
-                          (profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active')
-                            ? 'bg-amber-500 text-black border-amber-500 cursor-default' 
-                            : 'bg-transparent text-amber-500 border-amber-500 hover:bg-amber-500 hover:text-black'
-                        }`}
-                      >
-                        {(profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active') ? 'Tier Active' : 'Activate Growth'}
-                      </button>
-                    </div>
-
-                    {/* Tier 3 */}
-                    <div className={`p-6 md:p-8 min-h-[440px] rounded-[24px] border flex flex-col justify-between transition-all duration-300 hover:shadow-lg ${
-                      profile.tier === 'Enterprise Suite' 
-                        ? 'border-amber-400 bg-[#1C1917] text-white shadow-xl' 
-                        : 'bg-stone-900 border-stone-800 text-white'
-                    }`}>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[9px] font-black uppercase text-stone-400 tracking-wider font-mono">Plan C</span>
-                          {profile.tier === 'Enterprise Suite' && (
-                            <span className="text-[8px] font-black bg-amber-500 text-black px-1.5 py-0.5 rounded-full uppercase">Current</span>
-                          )}
-                        </div>
-                        <h3 className="text-sm font-black mb-0.5 uppercase tracking-wide text-white">Corporate Omni Console</h3>
-                        <p className="text-xl font-mono font-black text-amber-500 mb-2">$249<span className="text-[10px] font-normal text-stone-400">/mo</span></p>
-                        <p className="text-[11px] text-stone-300 leading-relaxed mb-4">Multi-store dataset mapping under high frequency operations buffers.</p>
-
-                        <div className="space-y-2 pt-3 border-t border-dashed border-stone-850 text-[11px] text-stone-300">
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Dedicated engineer integration</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Custom database schema API access</span></div>
-                          <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">High frequency stock simulation</span></div>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => {
-                          setProfile((p: any) => ({ ...p, tier: 'Enterprise Suite' }));
-                          showToast("🔥 Active: Multi-Store Corporate Omni Console ($249/mo). Unlocked!");
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-[10px] font-black uppercase border tracking-wider transition-all ${
-                          profile.tier === 'Enterprise Suite' 
-                            ? 'bg-amber-500 text-black border-amber-500 cursor-default' 
-                            : 'bg-transparent text-amber-500 border-amber-500 hover:bg-amber-500 hover:text-black'
-                        }`}
-                      >
-                        {profile.tier === 'Enterprise Suite' ? 'Tier Active' : 'Activate Enterprise'}
-                      </button>
-                    </div>
-
+                  {/* Toggle Controls */}
+                  <div className="flex items-center gap-3 bg-stone-950 p-1.5 rounded-full border border-stone-850">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAnnualBilling(false);
+                        showToast("📅 Switched to Monthly billing cadence.");
+                      }}
+                      className={`px-4 py-1.5 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                        !isAnnualBilling 
+                          ? 'bg-amber-500 text-black' 
+                          : 'text-stone-400 hover:text-stone-200'
+                      }`}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAnnualBilling(true);
+                        showToast("🎉 Switched to Annual billing cadence! 20% discount auto-applied.");
+                      }}
+                      className={`px-4 py-1.5 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer flex items-center gap-1 ${
+                        isAnnualBilling 
+                          ? 'bg-amber-500 text-black' 
+                          : 'text-stone-400 hover:text-stone-200'
+                      }`}
+                    >
+                      Annual 
+                      <span className="text-[8px] bg-stone-900 text-amber-400 px-1 py-0.2 rounded font-black font-mono">SAVE 20%</span>
+                    </button>
                   </div>
                 </div>
+
+                {/* Plan Tier Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  
+                  {/* Starter Tier */}
+                  <div className={`p-6 md:p-8 min-h-[440px] rounded-[28px] border flex flex-col justify-between transition-all hover:scale-[1.01] ${
+                    profile.tier === 'Starter Plan'
+                      ? 'border-amber-500 bg-stone-900 shadow-xl shadow-amber-500/5 text-white' 
+                      : isDark ? 'bg-stone-900 border-stone-800 text-white' : 'bg-white border-stone-200 text-stone-900 shadow-sm'
+                  }`}>
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">Entry level</span>
+                        {profile.tier === 'Starter Plan' && (
+                          <span className="text-[8px] font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase">Active</span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-black uppercase tracking-wide">Starter Standard</h3>
+                      
+                      <div className="flex items-baseline gap-1 mt-2.5 mb-3 select-text">
+                        <span className="text-3xl font-mono font-black text-amber-500">
+                          ${isAnnualBilling ? '23' : '29'}
+                        </span>
+                        <span className={`text-[10px] uppercase font-bold ${isDark ? 'text-stone-405' : 'text-stone-500'}`}>
+                          / mo {isAnnualBilling && '(billed annually)'}
+                        </span>
+                      </div>
+                      <p className={`text-xs leading-normal mb-4 ${isDark ? 'text-stone-300' : 'text-stone-605'}`}>
+                        For emerging SMB owners seeking automated stock tracking, client health monitoring, and SOP boards.
+                      </p>
+
+                      <div className={`space-y-2 pt-4 border-t border-dashed text-xs ${isDark ? 'border-stone-850 text-stone-300' : 'border-stone-200 text-stone-605'}`}>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">10 active Win-back sequences</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Standard stock alerts (StockSense)</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Basic SOP journal boards (Notebook)</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Single-role access authorization</span></div>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setProfile((p: any) => ({ ...p, tier: 'Starter Plan' }));
+                        showToast(`✨ Plan active: Down-graded to Starter Plan ($${isAnnualBilling ? '23' : '29'}/mo) successfully.`);
+                      }}
+                      className={`w-full mt-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+                        profile.tier === 'Starter Plan' 
+                          ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow' 
+                          : 'bg-transparent text-amber-500 border-amber-500 hover:bg-amber-500 hover:text-black'
+                      }`}
+                    >
+                      {profile.tier === 'Starter Plan' ? 'Active Tier' : 'Choose Starter'}
+                    </button>
+                  </div>
+
+                  {/* Growth Suite (Popular) */}
+                  <div className={`p-6 md:p-8 min-h-[440px] rounded-[28px] border relative flex flex-col justify-between transition-all hover:scale-[1.01] ${
+                    profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active'
+                      ? 'border-amber-500 bg-stone-900 shadow-xl shadow-amber-500/5 text-white' 
+                      : isDark ? 'bg-stone-900 border-stone-800 text-white' : 'bg-white border-stone-200 text-stone-900 shadow-sm'
+                  }`}>
+                    <div className="absolute top-0 right-6 -translate-y-1/2 bg-amber-500 text-black text-[8px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider border border-stone-900 shadow-md">
+                      MOST POPULAR
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">Mid-scale scales</span>
+                        {(profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active') && (
+                          <span className="text-[8px] font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase">Active</span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-black uppercase tracking-wide">Growth Core Suite</h3>
+                      
+                      <div className="flex items-baseline gap-1 mt-2.5 mb-3 select-text">
+                        <span className="text-3xl font-mono font-black text-amber-500">
+                          ${isAnnualBilling ? '63' : '79'}
+                        </span>
+                        <span className={`text-[10px] uppercase font-bold ${isDark ? 'text-stone-405' : 'text-stone-500'}`}>
+                          / mo {isAnnualBilling && '(billed annually)'}
+                        </span>
+                      </div>
+                      <p className={`text-xs leading-normal mb-4 ${isDark ? 'text-stone-300' : 'text-stone-605'}`}>
+                        For scaling retail outlets looking to connect Aria Autopilots, automated cash-aware ordering, and multi-channel marketing campaigns.
+                      </p>
+
+                      <div className={`space-y-2 pt-4 border-t border-dashed text-xs ${isDark ? 'border-stone-850 text-stone-300' : 'border-stone-200 text-stone-605'}`}>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Unlimited multi-channel campaigns</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Cash-Aware automatic reorders</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Aria Autopilot threads & Tone Rewriters</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Advanced Staff/Manager support delegation</span></div>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setProfile((p: any) => ({ ...p, tier: 'Growth Suite' }));
+                        showToast(`✨ Plan active: Up-graded to Growth Suite ($${isAnnualBilling ? '63' : '79'}/mo) successfully.`);
+                      }}
+                      className={`w-full mt-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+                        (profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active')
+                          ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow' 
+                          : 'bg-transparent text-amber-500 border-amber-500 hover:bg-amber-500 hover:text-black'
+                      }`}
+                    >
+                      {(profile.tier === 'Growth Suite' || profile.tier === 'Growth Suite Active') ? 'Active Tier' : 'Choose Growth'}
+                    </button>
+                  </div>
+
+                  {/* Enterprise Tier */}
+                  <div className={`p-6 md:p-8 min-h-[440px] rounded-[28px] border flex flex-col justify-between transition-all hover:scale-[1.01] ${
+                    profile.tier === 'Enterprise Suite' 
+                      ? 'border-amber-400 bg-stone-900 shadow-xl shadow-amber-500/5 text-white' 
+                      : isDark ? 'bg-stone-900 border-stone-800 text-white' : 'bg-white border-stone-200 text-stone-900 shadow-sm'
+                  }`}>
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">Unlimited Console</span>
+                        {profile.tier === 'Enterprise Suite' && (
+                          <span className="text-[8px] font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase">Active</span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-black uppercase tracking-wide">Corporate Forge Console</h3>
+                      
+                      <div className="flex items-baseline gap-1 mt-2.5 mb-3 select-text">
+                        <span className="text-3xl font-mono font-black text-amber-500">
+                          ${isAnnualBilling ? '199' : '249'}
+                        </span>
+                        <span className={`text-[10px] uppercase font-bold ${isDark ? 'text-stone-405' : 'text-stone-500'}`}>
+                          / mo {isAnnualBilling && '(billed annually)'}
+                        </span>
+                      </div>
+                      <p className={`text-xs leading-normal mb-4 ${isDark ? 'text-stone-300' : 'text-stone-605'}`}>
+                        For high-volume multi-store franchises demanding custom data schemas, dedicated VM priority, and high frequency stock simulation loops.
+                      </p>
+
+                      <div className={`space-y-2 pt-4 border-t border-dashed text-xs ${isDark ? 'border-stone-850 text-stone-300' : 'border-stone-200 text-stone-605'}`}>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Unlimited multi-store nodes</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Dedicated engineer schema mapping</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">High frequency stock simulations</span></div>
+                        <div className="flex items-center gap-1.5"><Check size={11} className="text-amber-500 shrink-0" /> <span className="truncate">Custom database API access</span></div>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setProfile((p: any) => ({ ...p, tier: 'Enterprise Suite' }));
+                        showToast(`🔥 Active: Multi-Store Corporate Forge Console ($${isAnnualBilling ? '199' : '249'}/mo) unlocked.`);
+                      }}
+                      className={`w-full mt-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+                        profile.tier === 'Enterprise Suite' 
+                          ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow' 
+                          : 'bg-transparent text-amber-500 border-amber-500 hover:bg-amber-500 hover:text-black'
+                      }`}
+                    >
+                      {profile.tier === 'Enterprise Suite' ? 'Active Tier' : 'Choose Enterprise'}
+                    </button>
+                  </div>
+
+                </div>
+
+                {/* Comprehensive Feature Comparison Table */}
+                <div className={`p-6 rounded-[24px] border space-y-4 ${
+                  isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200 text-stone-900'
+                }`}>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-amber-500">Complete Feature Matrices</h3>
+                    <p className="text-[10px] text-stone-400 mt-0.5">Compare features across free, standard limits, and enterprise setups to find the right fit.</p>
+                  </div>
+
+                  <div className="overflow-x-auto select-text">
+                    <table className="w-full text-[11px] text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-stone-800/80 text-stone-400 font-mono text-[9px] uppercase tracking-wide">
+                          <th className="py-2.5 font-bold">Core Capability</th>
+                          <th className="py-2.5 font-bold">Starter Standard</th>
+                          <th className="py-2.5 font-bold">Growth Core</th>
+                          <th className="py-2.5 font-bold">Corporate Console</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-800/40 font-medium">
+                        <tr>
+                          <td className="py-2 text-stone-300">Active Win-back Automations</td>
+                          <td className="py-2 text-stone-400">10 / mo</td>
+                          <td className="py-2 text-stone-200">Unlimited</td>
+                          <td className="py-2 text-stone-100 font-bold">Unlimited (Priority Queue)</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 text-stone-300">Cash-Aware Reorder parameters</td>
+                          <td className="py-2 text-[#EF4444] font-bold">✕ None</td>
+                          <td className="py-2 text-emerald-400">✔ Full Integration</td>
+                          <td className="py-2 text-emerald-500 font-bold">✔ Multi-store Hubs</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 text-stone-300">Aria Studio Control access</td>
+                          <td className="py-2 text-stone-400">Standard Monitoring</td>
+                          <td className="py-2 text-stone-200">Full Autonomous</td>
+                          <td className="py-2 text-stone-100 font-bold">Cognitive Overrides</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 text-stone-300">SOP Kanban board synchronization</td>
+                          <td className="py-2 text-emerald-401">✔ Enabled</td>
+                          <td className="py-2 text-emerald-401">✔ Auto-SOP Generators</td>
+                          <td className="py-2 text-emerald-401">✔ Custom APIs Linked</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 text-stone-300">Custom Role Delegation</td>
+                          <td className="py-2 text-stone-400">Owner Access Only</td>
+                          <td className="py-2 text-emerald-400">✔ Owner / Manager / Staff</td>
+                          <td className="py-2 text-emerald-400">✔ Granular Permissions Matrix</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 text-stone-300">Customer Support SLAs</td>
+                          <td className="py-2 text-stone-400">Email ticket (24h)</td>
+                          <td className="py-2 text-stone-200">Priority support ({"< 2h"})</td>
+                          <td className="py-2 text-amber-400 font-black">Dedicated Slack Engineer</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* FAQ Section with Slide-open dynamic Accordions */}
+                <div className={`p-6 rounded-[24px] border space-y-4 ${
+                  isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200 text-stone-900'
+                }`}>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-amber-500">Subscriptions FAQ Panel</h3>
+                    <p className="text-[10px] text-stone-400 mt-0.5">Find straightforward answers to general billing and feature constraints.</p>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {[
+                      {
+                        q: "Can I upgrade or downgrade billing terms at any time?",
+                        a: "Absolutely! Changing tiers updates your limits immediately. Downgrades take effect at the end of your current cycle, preserving your active limits till then."
+                      },
+                      {
+                        q: "What does 'Cash-Aware Reordering' in StockSense mean?",
+                        a: "On standard platforms, stock reorders are triggered strictly by material thresholds. Carbon-Aware or Cash-Aware reorders parse your current profit accounts, calculate minimum cost-of-capital, and safely delay or accelerate procurement orders."
+                      },
+                      {
+                        q: "How does the 'Aria Cognitive Loop' calculate runtime efficiency?",
+                        a: "Aria parses transaction logs and customer threads in real time. We audit token sizes, compute the average cognitive loops taken per dispatch, and optimize prompt models server-side dynamically."
+                      },
+                      {
+                        q: "Are there any hidden API integration or setup charges?",
+                        a: "Not at all. There are zero connection setup fees. All standard plans cover our default database pipelines and communication channel triggers out of the box."
+                      }
+                    ].map((faq, fIdx) => {
+                      const isOpen = activeFaq === fIdx;
+                      return (
+                        <div 
+                          key={fIdx}
+                          className="border-b border-stone-800/40 pb-2.5 bg-transparent"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveFaq(isOpen ? null : fIdx);
+                            }}
+                            className="w-full flex justify-between items-center text-left py-2 text-xs font-bold text-stone-200 hover:text-amber-500 transition-colors cursor-pointer"
+                          >
+                            <span>{faq.q}</span>
+                            <span className="text-amber-500 text-sm font-mono">{isOpen ? '−' : '+'}</span>
+                          </button>
+                          
+                          {isOpen && (
+                            <p className="text-[10.5px] text-stone-450 bg-stone-950/40 p-3.5 rounded-xl border border-stone-850/60 leading-relaxed mb-1 font-sans">
+                              {faq.a}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
+            </div>
 
               {/* INTEGRATED DEDICATED FULL PAGE SYSTEM SETTINGS PANEL */}
               <div className={currentTab === 'settings' ? 'block text-white max-h-[calc(100vh-140px)] overflow-y-auto pr-1 scrollbar-thin' : 'hidden'}>
@@ -2239,10 +2500,9 @@ export default function App() {
                       <p className="text-xs text-stone-300 dark:text-stone-300 leading-normal">{t.settingsSubtitle}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-                      {/* Left Column - Store Profile & Contacts Database */}
-                      <div className="space-y-4">
-                        <div className={`p-4 rounded-xl border ${settingsCardBg}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+                      {/* Card 1 - Store Identity & Custom Sidebar Navigation labels */}
+                      <div className={`p-4 rounded-2xl border flex flex-col justify-between ${settingsCardBg}`}>
                         <div className="flex items-center gap-2 mb-3">
                           <span className={`p-1 rounded-md ${isDark ? 'bg-amber-500/10 text-amber-500' : 'bg-stone-100 text-stone-800'}`}><Sliders size={13} /></span>
                           <div>
@@ -2368,8 +2628,8 @@ export default function App() {
                         </form>
                       </div>
 
-                      {/* EXCLUSIVE RECURRING SYNC CONTACT LIST WIDGET PANEL */}
-                      <div className={`p-4 px-5 rounded-2xl border ${isDark ? 'bg-stone-900 border-stone-800 text-white' : 'bg-white border-stone-200 text-[#1C1917]'}`}>
+                      {/* Card 2 - CRM Unified Contacts Database Panel (Aligned Side-by-Side) */}
+                      <div className={`p-4 px-5 rounded-2xl border ${isDark ? 'bg-stone-900 border-stone-800 text-white shadow-xl' : 'bg-white border-stone-200 text-[#1C1917]'}`}>
                         <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
                           <div className="flex items-center gap-2">
                             <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500"><Users size={14} /></span>
@@ -2568,13 +2828,9 @@ export default function App() {
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Right Column - Wrapped inside space-y-6 with Multilingual Selector, New Cost Guards, and Status Card */}
-                    <div className="space-y-6">
-                        
-                        {/* Multilingual Selector Node Widget Expansion */}
-                      <div className={`p-4 px-5 rounded-2xl border ${isDark ? 'bg-stone-900 border-stone-800 text-white shadow-xl animate-fade-in' : 'bg-white border-stone-200 text-[#1C1917]'}`}>
+                      {/* Card 3 - Additional Operations, budget guards & synthesized Voice Tone controls */}
+                      <div className={`p-4 px-5 rounded-2xl border ${isDark ? 'bg-stone-900 border-stone-800 text-white shadow-xl animate-fade-in animate-pulse' : 'bg-white border-stone-200 text-[#1C1917]'}`}>
                         <div className="flex items-center gap-2 mb-3">
                           <span className={`p-1.5 rounded-lg ${isDark ? 'bg-amber-500/10 text-amber-500' : 'bg-stone-100 text-stone-800'}`}><Sparkles size={14} /></span>
                           <div>
@@ -2748,6 +3004,123 @@ export default function App() {
                         </div>
                       </div>
 
+                      {/* TEAM ROLES SYSTEM WIDGET (Owner/Manager/Staff) */}
+                      <div className={`p-4 px-5 rounded-2xl border flex flex-col justify-between h-fit space-y-3 ${
+                        isDark ? 'bg-stone-900 border-stone-800 text-white shadow-xl' : 'bg-white border-stone-200 text-[#1C1917]'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500"><Users size={12} /></span>
+                          <div>
+                            <h3 className="font-extrabold text-xs">Team Access Controls</h3>
+                            <p className="text-[10px] text-stone-400">Delegate role credentials. Owner (All nodes), Manager (Operation logs), Staff (Stock & Chat only).</p>
+                          </div>
+                        </div>
+
+                        {/* Interactive Member Addition Form */}
+                        <div className="p-3 rounded-xl bg-stone-950/60 border border-stone-850 space-y-2">
+                          <p className="text-[8.5px] font-black uppercase text-amber-500 tracking-wider">Authorize New Team Member</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            <input
+                              type="text"
+                              placeholder="Full Name"
+                              value={newMemberName}
+                              onChange={e => setNewMemberName(e.target.value)}
+                              className={`p-1.5 rounded-lg border text-[10.5px] font-semibold ${settingsInputBg}`}
+                            />
+                            <input
+                              type="email"
+                              placeholder="Email Address"
+                              value={newMemberEmail}
+                              onChange={e => setNewMemberEmail(e.target.value)}
+                              className={`p-1.5 rounded-lg border text-[10.5px] font-semibold ${settingsInputBg}`}
+                            />
+                          </div>
+
+                          <div className="flex justify-between items-center gap-2 flex-wrap pt-0.5">
+                            <div className="flex items-center gap-1">
+                              <span className="text-[8px] text-stone-400 font-bold mr-1">Role:</span>
+                              {(['Owner', 'Manager', 'Staff'] as const).map(role => (
+                                <button
+                                  key={role}
+                                  type="button"
+                                  onClick={() => setNewMemberRole(role)}
+                                  className={`px-1.5 py-0.5 text-[8px] uppercase font-black tracking-wider rounded transition-all cursor-pointer ${
+                                    newMemberRole === role 
+                                      ? 'bg-amber-500 text-black' 
+                                      : 'bg-stone-900 text-stone-400 hover:text-white'
+                                  }`}
+                                >
+                                  {role}
+                                </button>
+                              ))}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!newMemberName.trim() || !newMemberEmail.trim()) {
+                                  showToast("⚠️ Missing Name or Email fields.");
+                                  return;
+                                }
+                                const nId = (teamMembers.length + 1).toString();
+                                const todayStr = new Date().toISOString().split('T')[0];
+                                setTeamMembers([...teamMembers, { id: nId, name: newMemberName, email: newMemberEmail, role: newMemberRole, joinedDate: todayStr }]);
+                                setNewMemberName('');
+                                setNewMemberEmail('');
+                                showToast(`🎉 Success: Invitation issued as ${newMemberRole} role!`);
+                              }}
+                              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-450 text-black text-[9px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all active:scale-95"
+                            >
+                              Add Member
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Active Registered Team Roster */}
+                        <div className="space-y-2">
+                          <p className="text-[8.5px] font-black uppercase tracking-wider text-stone-400">Authorized Workspace Roster</p>
+                          <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1 scrollbar-thin">
+                            {teamMembers.map(member => (
+                              <div 
+                                key={member.id}
+                                className="flex items-center justify-between p-2 rounded-xl border border-stone-850/60 bg-stone-950/30 text-[11px]"
+                              >
+                                <div className="space-y-0.5 text-left">
+                                  <p className="font-extrabold text-stone-205">{member.name}</p>
+                                  <p className="text-[8px] text-stone-450 font-mono">{member.email}</p>
+                                </div>
+
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`px-1.5 py-0.2 rounded text-[7.5px] font-mono font-black uppercase tracking-wider ${
+                                    member.role === 'Owner' 
+                                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/10' 
+                                      : member.role === 'Manager'
+                                        ? 'bg-blue-500/10 text-cyan-400 border border-cyan-500/15'
+                                        : 'bg-stone-800 text-stone-400'
+                                  }`}>
+                                    {member.role}
+                                  </span>
+
+                                  {member.id !== '1' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setTeamMembers(teamMembers.filter(m => m.id !== member.id));
+                                        showToast(`🗑️ De-authorized credentials for ${member.name}.`);
+                                      }}
+                                      className="text-red-500 hover:text-red-400 font-black text-[10px] cursor-pointer inline-block ml-1"
+                                      title="Revoke access"
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Server/Operations status */}
                       <div className={`p-4 px-5 rounded-2xl border flex flex-col justify-between h-fit space-y-3 ${isDark ? 'bg-stone-900 border-stone-800 text-white' : 'bg-white border-stone-200 text-[#1C1917]'}`}>
                         <div>
@@ -2774,7 +3147,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-dashed border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-3 text-center">
+                      <div className="col-span-1 md:col-span-2 xl:col-span-3 pt-4 border-t border-dashed border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-3 text-center">
                         <button 
                           onClick={() => {
                             setOnboarded(false);
@@ -2802,7 +3175,7 @@ export default function App() {
                           <span>Close Workspace (Log Out)</span>
                         </button>
                       </div>
-                    </div>
+
                     </div>
                   </div>
                 </div>
@@ -3003,7 +3376,7 @@ export default function App() {
                         setActiveTourStep(prev => prev !== null ? prev + 1 : null);
                       } else {
                         setActiveTourStep(null);
-                        showToast("🎉 Walkthrough complete! Omni environment successfully synced.");
+                        showToast("🎉 Walkthrough complete! Forge environment successfully synced.");
                       }
                     }}
                     className="px-4 py-1.5 text-[9px] font-black bg-amber-500 hover:bg-amber-440 text-black rounded-xl hover:shadow-lg hover:shadow-amber-500/10 transition-all cursor-pointer uppercase flex items-center gap-1"
@@ -3028,6 +3401,18 @@ export default function App() {
             showToast("💷 Simulation Sync: Synced custom £180 transaction lead into CRM ledger statistics.");
           }}
           theme={theme === 'dark' ? 'dark' : 'light'}
+        />
+      )}
+
+      {/* ARIA FLOATING VERBAL COMPANION */}
+      {onboarded && (
+        <AriaFloatingCompanion 
+          theme={theme === 'dark' ? 'dark' : 'light'}
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          isSimulatingLive={isSimulatingLive}
+          setIsSimulatingLive={setIsSimulatingLive}
+          showToast={showToast}
         />
       )}
 
